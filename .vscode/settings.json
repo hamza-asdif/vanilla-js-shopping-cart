@@ -1,0 +1,48 @@
+{
+  "folder-color.pathColors": [
+    {
+      "folderPath": "SHOPPING CART by Hamza Asdif\\css\\",
+      "color": "foldercolorizer.color_00ccff"
+    },
+    {
+      "folderPath": "SHOPPING CART by Hamza Asdif\\cart.html\\",
+      "color": "foldercolorizer.color_ff6600"
+    },
+    {
+      "folderPath": "SHOPPING CART by Hamza Asdif\\create-product.html\\",
+      "color": "foldercolorizer.color_ff6600"
+    },
+    {
+      "folderPath": "SHOPPING CART by Hamza Asdif\\favorites.html\\",
+      "color": "foldercolorizer.color_ff6600"
+    },
+    {
+      "folderPath": "SHOPPING CART by Hamza Asdif\\index.html\\",
+      "color": "foldercolorizer.color_ff6600"
+    },
+    {
+      "folderPath": "SHOPPING CART by Hamza Asdif\\login.html\\",
+      "color": "foldercolorizer.color_ff6600"
+    },
+    {
+      "folderPath": "SHOPPING CART by Hamza Asdif\\product-page.html\\",
+      "color": "foldercolorizer.color_ff6600"
+    },
+    {
+      "folderPath": "SHOPPING CART by Hamza Asdif\\profile.html\\",
+      "color": "foldercolorizer.color_ff6600"
+    },
+    {
+      "folderPath": "SHOPPING CART by Hamza Asdif\\register.html\\",
+      "color": "foldercolorizer.color_ff6600"
+    },
+    {
+      "folderPath": "SHOPPING CART by Hamza Asdif\\search.html\\",
+      "color": "foldercolorizer.color_ff6600"
+    },
+    {
+      "folderPath": "SHOPPING CART by Hamza Asdif\\js\\",
+      "color": "foldercolorizer.color_ffcc00"
+    }
+  ]
+}

@@ -1,0 +1,147 @@
+body{
+    direction: rtl;
+}
+
+:root{
+    --main-color : #F24547;
+}
+
+*{
+    font-family: "El Messiri", serif;
+
+}
+
+
+.header-create-product{
+    width: 80%;
+    margin: auto;
+    text-align: center;
+    margin-top: 20px;
+}
+
+.create-product-logo-box{
+    width: 200px;
+    margin: auto;
+}
+
+.create-product-logo-box img{
+    width: 100%;
+}
+
+
+
+
+/* ******* create product page text styles */
+.create-page-header-text{
+    margin: 50px 0px 40px 0px;
+    text-align: center;
+}
+
+.create-page-header-title{
+    padding-bottom: 8px;
+}
+
+
+
+/* ******* create product form styles */
+.create-product-form{
+    width: 60%;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 15px;
+    padding: 35px 45px 45px 45px;
+    border: 2px solid #ddd;
+    border-radius: 12px;
+}
+
+.create-product-form input{
+    height: 52px;
+    padding: 8px 15px;
+    border: none;
+    font-size: 17px;
+    border-radius: 4px;
+}
+
+.create-product-form input[type="text"]{
+    border-bottom: 1px solid #ddd;
+    color: #222;
+}
+
+.create-product-form input[type="text"]:focus{
+    outline: 2px solid var(--main-color);
+}
+
+input[type="submit"]{
+    background: var(--main-color);
+    color: white;
+    font-size: 18px;
+    font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+input[type="submit"]:hover{
+    background: #ff1014;
+}
+
+.upload-image{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    margin: auto;
+    height: 100px;
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin: 25px 0px;
+    cursor: pointer;
+}
+
+.upload-image:hover{
+    border: none;
+    outline: 2px solid red;
+}
+
+
+input[type="file"]{
+    height: fit-content;
+    cursor: pointer;
+}
+
+
+/* !!!!! circle - create product */
+.create-product-circle{
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: green;
+    color: white;
+    font-weight: 600;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 3px solid white;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.create-product-circle:hover{
+    background-color: darkgreen;
+    border: 1px solid darkgreen;
+}
+
+
+.create-product-circle a{
+    color: white;
+    font-size: 17px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

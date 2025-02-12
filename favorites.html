@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>favorites page</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/header.css">
+    <link rel="stylesheet" href="css/cart.css">
+    <link rel="stylesheet" href="css/favorites.css">
+    <link rel="stylesheet" href="css/search.css">
+
+    <!-- import icons -->
+    <script src="https://kit.fontawesome.com/ba8d94e9ab.js" crossorigin="anonymous"></script>
+    <!-- /import icons -->
+
+
+    <!-- import font -->
+    <link href="https://fonts.googleapis.com/css2?family=El+Messiri:wght@400..700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap"
+        rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flat-ui/2.3.0/css/flat-ui.min.css" rel="" />
+    <!-- /import fonts -->
+
+
+
+</head>
+
+<body dir="rtl">
+    <!-- header -->
+    <header class="header">
+        <div class="top-bar">
+            <span class="top-bar-title">
+                👈 توصيل مجاني لجميع ربوع المملكة 👉
+            </span>
+        </div>
+
+        <div class="middle-header">
+            <div class="container">
+                <div class="main-header">
+                    <div class="menu-box">
+                        <ul class="menu-ul">
+                            <li class="menu-li search-icon"><a href="#" class="menu-a" id="search-a"><i
+                                        class="fa-solid fa-magnifying-glass"></i></a></li>
+                            <li class="menu-li"><a href="index.html" class="menu-a">الصفحة الرئيسية</a></li>
+                            <li class="menu-li"><a href="login.html" class="menu-a"> تسجيل الدخول</a></li>
+                            <li class="menu-li"><a href="register.html" class="menu-a"> إنشاء حساب</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="logo-box">
+                        <a href="index.html" class="logo-link">
+                            <img src="images/logo.png" alt="" class="logo">
+                        </a>
+                    </div>
+
+                    <div class="cart-box">
+                        <div class="cart-box-div">
+                            <div class="cart-content">
+                                <a href="#" class="cart-link">
+                                    <i class="fa-solid fa-cart-plus" id="cart-icon"></i>
+                                    <span class="cart-counter">0</span>
+                                    <span class="cart-span">0 ريال سعودي</span>
+                                </a>
+                            </div>
+
+                            <div class="cart-sidebar">
+                                <div class="cart-sidebar-header">
+                                    <div class="sidebar-header-content">
+                                        <h3 class="sidebar-header-title">سلة مشترياتي</h3>
+                                        <span class="sidebar-header-span">0 عناصر</span>
+                                    </div>
+
+                                    <i class="fa-regular fa-circle-xmark" id="close-sidebar"></i>
+                                </div>
+
+                                <div class="cart-sidebar-products">
+                                    <ul class="ul-product-dom">
+                                    </ul>
+                                </div>
+
+                                <div class="sidebar-call-to-action">
+                                    <div class="sidebar-first-tab">
+                                        <span class="first-tab-title">مجموع سلة التسوق</span>
+                                        <span class="first-tab-span" id="cart-sum-span">0 ريال سعودي</span>
+                                    </div>
+
+                                    <div class="sidebar-middle-tab">
+                                        <a href="cart.html" id="cart-buy-now"> <button class="middle-tab-btn">شراء
+                                                الآن</button> </a>
+                                    </div>
+
+                                    <div class="sidebar-last-tab">
+                                        <button class="last-tab-btn">استمر في التسوق</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- /.header -->
+
+    <!-- search bar -->
+    <div class="search-box">
+        <div class="container">
+            <select title="collections" name="collection">
+                <option value="" selected="selected" hidden>جميع التشكيلات</option>
+                <option value="49f4962c-389f-455e-99b9-ff004a17c9fc">المنتجات الأكثر طلبا في المملكة🔥
+                </option>
+                <option value="8998afd0-68e7-4f99-bda0-8e7e8dccbdc3">Women Bra Products</option>
+                <option value="5aed3476-7b41-4e6c-b5eb-b1d04702e1e3">Women 25</option>
+                <option value="1c161740-bfa4-48f7-bed3-6ce11bbf3959">التصنيف الأول</option>
+                <option value="206ae565-9b3c-49a6-9695-2358d97bf97d">منتجات حصريا في المملكة العربية
+                    السعودية🔥</option>
+                <option value="f75d10c7-c9f6-4a51-af8d-3f480d3dbd00">Beauty</option>
+            </select>
+    
+            <div class="search-input">
+                <input type="search" placeholder="البحث عن منتج" id="search">
+                <button class="search-btn">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+     <!-- /.end search bar -->
+
+
+
+    <!-- TODO   -->
+    <div class="favorites-container">
+        <div class="cart-table-content">
+            <div class="container">
+                <div class="cart">
+                    <div class="cart-table-header">
+                        <div class="first-div"></div>
+                        <div class="second-div">المُنتج</div>
+                        <div class="third-div">الكمية</div>
+                        <div class="four-div">الثمن</div>
+                    </div>
+
+                    <div class="cart-table" id="favorte-widget">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <footer class="footer">
+        <div class="footer-logo-container">
+            <div class="footer-logo-box">
+                <a href="index.html" class="footer-logo-link">
+                    <img src="images/logo.png" alt="">
+                </a>
+            </div>
+
+        </div>
+        <hr>
+
+        <div class="footer-text-content">
+            <div class="footer-link-box">
+                <ul class="footer-ul">
+                    <li class="footer-li"><a href="#" class="footer-a">عن المتجر</a></li>
+                    <li class="footer-li"><a href="#" class="footer-a">عن المتجر</a></li>
+                    <li class="footer-li"><a href="#" class="footer-a">طرق الدفع</a></li>
+                    <li class="footer-li"><a href="#" class="footer-a">الشحن والتسليم</a></li>
+                </ul>
+            </div>
+
+
+            <div class="footer-link-box">
+                <ul class="footer-ul">
+                    <li class="footer-li"><a href="#" class="footer-a">اتصل بنا</a></li>
+                    <li class="footer-li"><a href="#" class="footer-a">اتصل بنا</a></li>
+                    <li class="footer-li"><a href="#" class="footer-a">الأسئلة المتكررة</a></li>
+                    <li class="footer-li"><a href="#" class="footer-a"></a></li>
+                </ul>
+            </div>
+
+            
+
+
+
+            <div class="footer-link-box">
+                <ul class="footer-ul">
+                    <li class="footer-li"><a href="#" class="footer-a">الشروط والسياسات</a></li>
+                    <li class="footer-li"><a href="#" class="footer-a">شروط الاستخدام</a></li>
+                    <li class="footer-li"><a href="#" class="footer-a">سياسة الاستبدال والاسترجاع</a></li>
+                    <li class="footer-li"><a href="#" class="footer-a">سياسة الخصوصية</a></li>
+                </ul>
+            </div>
+        </div>
+     </footer>
+
+
+
+
+    <script src="js/mydata.js"></script>
+    <script src="js/generals.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/favorites.js"></script>
+    <script src="js/search.js"></script>
+    <script src="js/script.js"></script>
+</body>
+
+</html>

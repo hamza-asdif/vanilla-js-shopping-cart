@@ -1,0 +1,47 @@
+:root{
+    --main-color : #F24547;
+}
+
+.cart-content{
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.profile-a{
+    text-decoration: none;
+}
+
+.profile-name{
+    text-transform: uppercase;
+    text-decoration: underline;
+    margin-left: 15px;
+    color: white;
+    letter-spacing: 0.4px;
+}
+
+
+
+.profile-box{
+    height: 100%;
+}
+
+.cart-content{
+    display: flex;
+    align-items: center;
+}
+
+.profile i{
+    color: white;
+    padding: 10px;
+    border: 1px solid white;
+    border-radius: 50%;
+    margin-left: 15px;
+    font-size: 16px;
+    transition: all 0.2s ease-out;
+}
+
+.profile i:hover{
+    color: var(--main-color);
+    border-color: var(--main-color);
+}

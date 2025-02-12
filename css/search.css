@@ -1,0 +1,80 @@
+:root {
+    --main-color: #f24547;
+  }
+
+
+.search-box{
+    position: absolute;
+    top: 170px;
+    height: 0px;
+    background: var(--main-color);
+    width: 100%;
+    padding: 10px;
+    display: none;
+    transition: all 0.5s;
+    overflow: hidden;
+}
+
+.search-box .container{
+    display: flex;
+}
+
+select{
+    width: 200px;
+    outline: none;
+    padding: 8px 10px;
+    background: #CE3B3C;
+    color: white;
+    border: none;
+    font-size: 16px;
+    border-radius: 8px;
+    display: inline-block;
+    margin-left: 10px;
+}
+
+.search-input input{
+    padding: 8px 10px;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    width: 1050px;
+    position: relative;
+}
+
+.search-input{
+    width: 1050px;
+}
+
+.search-btn{
+    position: absolute;
+    left: 410px;
+    top: 18px;
+    width: 30px;
+    height: 30px;
+    line-height: 30px;
+    background: none;
+    border: none;
+    color: gray;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.search-btn:hover{
+    color: #000;
+}
+
+.search-btn i{
+    font-size: 16px;
+}
+
+
+
+/* !!!! if search empty an element H2 will be display !!! */
+.search-product-empty{
+    width: 100%;
+    margin: auto;
+    text-transform: capitalize;
+    text-decoration: underline;
+    text-align: center;
+    color: #f24547;
+}
