@@ -1,48 +1,152 @@
-let SidebarUlDiv = document.querySelector(".ul-product-dom")
-let SideBar = document.querySelector(".cart-sidebar")
-let SidebarClose = document.querySelector("#close-sidebar")
-let CartHeaderLink = document.querySelector(".cart-link")
-let sidebarCartSumDom = document.querySelector("#cart-sum-span")
-let HeaderCartSumDom = document.querySelector(".cart-span")
-let HeaderCartCounter = document.querySelector(".cart-counter")
-let sidebarCartCounter = document.querySelector(".sidebar-header-span")
+// DOM Elements
+let SidebarUlDiv = document.querySelector(".ul-product-dom");
+let SideBar = document.querySelector(".cart-sidebar");
+let SidebarClose = document.querySelector("#close-sidebar");
+let CartHeaderLink = document.querySelector(".cart-link");
+let sidebarCartSumDom = document.querySelector("#cart-sum-span");
+let HeaderCartSumDom = document.querySelector(".cart-span");
+let HeaderCartCounter = document.querySelector(".cart-counter");
+let sidebarCartCounter = document.querySelector(".sidebar-header-span");
+let ProductPageDom = document.querySelector(".product-ui");
+let CartPageDom = document.querySelector(".cart-table");
+let SearchIcon = document.querySelector("#search-a");
+let SearchBar = document.querySelector(".search-box");
+let searchInput = document.querySelector("#search");
+let searchPageDom = document.querySelector("#search-product-dom");
+let searchEmptyDom = document.querySelector(".search-empty");
+let Overlay = document.querySelector(".overlay");
+let favoriteWidget = document.querySelector("#favorte-widget");
 
-// --------- Product Page Varaibles ---------------- 
-let ProductPageDom = document.querySelector(".product-ui")
+// Utility Functions
+const formatPrice = (price) => {
+  const num = Number(price);
+  return num % 1 === 0 ? num.toString() : num.toFixed(2);
+};
 
+// Notification System
+window.showNotification = (message, type = "error") => {
+  const existingNotification = document.querySelector(
+    ".cart-error-message, .cart-success-message"
+  );
+  if (existingNotification) {
+    existingNotification.remove();
+  }
 
-// ---------- cart page variables -------------------
-let CartPageDom = document.querySelector(".cart-table")
+  const notification = document.createElement("div");
+  notification.className =
+    type === "error" ? "cart-error-message" : "cart-success-message";
+  notification.textContent = message;
+  document.body.appendChild(notification);
 
-// ----------- search page variables or in home page....--------
-let SearchIcon = document.querySelector("#search-a")
-let SearchBar = document.querySelector(".search-box")
-let searchInput = document.querySelector("#search")
-let searchPageDom = document.querySelector("#search-product-dom")
-let searchEmptyDom = document.querySelector(".search-empty")
+  setTimeout(() => {
+    notification.style.opacity = "0";
+    setTimeout(() => notification.remove(), 300);
+  }, 3000);
+};
 
+// Update DOM elements with error handling
+const updateDomElement = (selector, value) => {
+  const element = document.querySelector(selector);
+  if (element) {
+    element.innerHTML = value;
+  }
+};
 
-// -------- favorites variavles ( home page & favorites page) ---------
-let Overlay = document.querySelector(".overlay")
-let favoriteWidget = document.querySelector("#favorte-widget")
+// Storage helper functions
+const safeLocalStorageGet = (key, defaultValue = null) => {
+  try {
+    const item = localStorage.getItem(key);
+    return item ? JSON.parse(item) : defaultValue;
+  } catch (error) {
+    console.error(`Error reading from localStorage: ${key}`, error);
+    return defaultValue;
+  }
+};
 
+const safeLocalStorageSet = (key, value) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+    return true;
+  } catch (error) {
+    console.error(`Error writing to localStorage: ${key}`, error);
+    showNotification("حدث خطأ في حفظ البيانات");
+    return false;
+  }
+};
 
+// Sidebar Animation Management with error handling
+const ANIMATION_DURATION = 300;
+let sidebarAnimationTimeout;
+let isAnimating = false;
 
-// !!!! function to open and close sidebar
-const OpenCloseSideBar = function() {
-    if (SideBar.style.transform = "translateX(-100%)"){
-        SideBar.style.transform = "translateX(0px)"
-    }
+const openSidebar = function () {
+  if (isAnimating || !SideBar) return;
 
-    else{
-        SideBar.style.transform = "translateX(-100%)"
-    }
+  try {
+    isAnimating = true;
+    SideBar.style.transition = `transform ${ANIMATION_DURATION}ms ease-out`;
+    SideBar.style.transform = "translateX(0px)";
+    document.body.style.overflow = "hidden";
+    if (Overlay) Overlay.style.display = "block";
 
-    SidebarClose.addEventListener("click", function() {
-        SideBar.style.transform = "translateX(-100%)"
-    })
+    setTimeout(() => {
+      isAnimating = false;
+    }, ANIMATION_DURATION);
+  } catch (error) {
+    console.error("Error opening sidebar:", error);
+    isAnimating = false;
+  }
+};
+
+const closeSidebar = function () {
+  if (isAnimating || !SideBar) return;
+
+  try {
+    isAnimating = true;
+    SideBar.style.transform = "translateX(-100%)";
+    document.body.style.overflow = "";
+    if (Overlay) Overlay.style.display = "none";
+
+    setTimeout(() => {
+      SideBar.style.transition = "";
+      isAnimating = false;
+    }, ANIMATION_DURATION);
+  } catch (error) {
+    console.error("Error closing sidebar:", error);
+    isAnimating = false;
+  }
+};
+
+// Event Listeners
+if (CartHeaderLink) {
+  CartHeaderLink.addEventListener("click", function (e) {
+    e.preventDefault();
+    openSidebar();
+  });
 }
 
-CartHeaderLink.addEventListener("click", function() {
-    OpenCloseSideBar()
-})
+if (SidebarClose) {
+  SidebarClose.addEventListener("click", closeSidebar);
+}
+
+if (Overlay) {
+  Overlay.addEventListener("click", closeSidebar);
+}
+
+// Close sidebar on escape key
+document.addEventListener("keydown", function (e) {
+  if (
+    e.key === "Escape" &&
+    SideBar &&
+    SideBar.style.transform === "translateX(0px)"
+  ) {
+    closeSidebar();
+  }
+});
+
+// Error handling for cart operations
+window.addEventListener("error", function (e) {
+  console.error("Cart operation error:", e.error);
+  // Show user-friendly error message
+  showNotification("حدث خطأ. يرجى المحاولة مرة أخرى");
+});

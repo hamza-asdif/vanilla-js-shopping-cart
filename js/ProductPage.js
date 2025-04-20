@@ -1,16 +1,12 @@
-
-
-
 // !!! functions to draw Products From Cart into Product Page
 
-const ProductPageUI = function(id) {
-    NewDB()
-    let ProductId_Storage = localStorage.getItem("Product_Id") || ""
+const ProductPageUI = function (id) {
+  let ProductId_Storage = localStorage.getItem("Product_Id") || "";
+  const products = JSON.parse(localStorage.getItem("Products")) || [];
 
-
-    Products.map(function(element) {
-        if ( element.id == ProductId_Storage){
-            let Prod = `<div class="product-image-container">
+  products.forEach(function (element) {
+    if (element.id == ProductId_Storage) {
+      let Prod = `<div class="product-image-container">
                     <div class="product-img-box">
                         <img src="${element.Image}" alt="">
                     </div>
@@ -20,7 +16,6 @@ const ProductPageUI = function(id) {
                         <img src="${element.Image}" alt="" class="image-alternative">
                         <img src="${element.Image}" alt="" class="image-alternative">
                         <img src="${element.Image}" alt="" class="image-alternative">
-
                     </div>
                 </div>
 
@@ -38,7 +33,7 @@ const ProductPageUI = function(id) {
                            <input type="text" class="phone" placeholder="رقم الهاتف">
                            <input type="text" class="city" placeholder="المدينة">
                            <input type="text" class="adress" placeholder="العنوان">
-                           </div>
+                        </div>
                     </form>
 
                     <a class="checkout-btn-container">
@@ -46,36 +41,33 @@ const ProductPageUI = function(id) {
                         <i class="fa-solid fa-cart-plus"></i>
                         <input type="submit" class="checkout-btn" value="لتأكيد الطلب اضغط هنا">
                         </form>
-                        
                     </a>
                     <div class="fake-infos">
                         <span class="fake-visitors">🔥أكثر من 2500 زبون راض عن هذا المنتج🔥</span>
                         <span class="fake-counter">👁‍🗨 يشاهده <span class="visitors-counter">48</span> زبون في الوقت
                             الحالي.</span>
                     </div>
-                </div>`
+                </div>`;
 
-            ProductPageDom.innerHTML = Prod
-        }
-    })
-}
-ProductPageUI()
+      ProductPageDom.innerHTML = Prod;
+    }
+  });
+};
 
+// Wait for products to be loaded
+window.addEventListener("productsLoaded", ProductPageUI);
 
+// Also run on page load in case products are already loaded
+document.addEventListener("DOMContentLoaded", ProductPageUI);
 
+const SecondProductPageUI = function (id) {
+  let secondProductId_Storage = localStorage.getItem("Second_Product_Id") || "";
+  const secondProducts =
+    JSON.parse(localStorage.getItem("Second_Products")) || [];
 
-
-const SecondProductPageUI = function(id) {
-    NewDB()
-    let secondProductId_Storage = localStorage.getItem("Second_Product_Id") || ""
-    let Get_secondProducts = JSON.parse(localStorage.getItem("Second_Products"))
-    console.log(Get_secondProducts)
-    
-
-
-    Get_secondProducts.forEach(function(element) {
-        if ( element.id == secondProductId_Storage){
-            let Prod = `<div class="product-image-container">
+  secondProducts.forEach(function (element) {
+    if (element.id == secondProductId_Storage) {
+      let Prod = `<div class="product-image-container">
                     <div class="product-img-box">
                         <img src="${element.Image}" alt="">
                     </div>
@@ -85,7 +77,6 @@ const SecondProductPageUI = function(id) {
                         <img src="${element.Image}" alt="" class="image-alternative">
                         <img src="${element.Image}" alt="" class="image-alternative">
                         <img src="${element.Image}" alt="" class="image-alternative">
-
                     </div>
                 </div>
 
@@ -103,7 +94,7 @@ const SecondProductPageUI = function(id) {
                            <input type="text" class="phone" placeholder="رقم الهاتف">
                            <input type="text" class="city" placeholder="المدينة">
                            <input type="text" class="adress" placeholder="العنوان">
-                           </div>
+                        </div>
                     </form>
 
                     <a class="checkout-btn-container">
@@ -111,17 +102,21 @@ const SecondProductPageUI = function(id) {
                         <i class="fa-solid fa-cart-plus"></i>
                         <input type="submit" class="checkout-btn" value="لتأكيد الطلب اضغط هنا">
                         </form>
-                        
                     </a>
                     <div class="fake-infos">
                         <span class="fake-visitors">🔥أكثر من 2500 زبون راض عن هذا المنتج🔥</span>
                         <span class="fake-counter">👁‍🗨 يشاهده <span class="visitors-counter">48</span> زبون في الوقت
                             الحالي.</span>
                     </div>
-                </div>`
+                </div>`;
 
-            ProductPageDom.innerHTML = Prod
-        }
-    })
-}
-SecondProductPageUI()
+      ProductPageDom.innerHTML = Prod;
+    }
+  });
+};
+
+// Wait for products to be loaded
+window.addEventListener("productsLoaded", SecondProductPageUI);
+
+// Also run on page load in case products are already loaded
+document.addEventListener("DOMContentLoaded", SecondProductPageUI);

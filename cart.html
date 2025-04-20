@@ -118,7 +118,7 @@
                     السعودية🔥</option>
                 <option value="f75d10c7-c9f6-4a51-af8d-3f480d3dbd00">Beauty</option>
             </select>
-    
+
             <div class="search-input">
                 <input type="search" placeholder="البحث عن منتج" id="search">
                 <button class="search-btn">
@@ -127,57 +127,70 @@
             </div>
         </div>
     </div>
-     <!-- /.end search bar -->
+    <!-- /.end search bar -->
 
-    <div class="cart-main">
-        <div class="cart-path">
-            <div class="container">
-                <a href="index.html" class="cart-home-icon"><i class="fa-solid fa-house"></i></a>
-                <i class="fa-solid fa-chevron-left" id="left"></i>
-                <span class="cart-path-span">سلة مشترياتي</span>
-            </div>
-        </div>
-
-        <div class="cart-header">
-            <div class="container">
-                <div class="cart-header-content">
-                    <h2 class="cart-title">سلة مشترياتي</h2>
-                    <button class="cart-pay-btn">دفع</button>
+    <div class="cart-page-header">
+        <div class="container">
+            <div class="cart-header-content">
+                <div class="cart-title-section">
+                    <h1 class="cart-title">سلة المشتريات</h1>
+                    <p class="cart-subtitle">مراجعة وإتمام الطلب</p>
+                </div>
+                <div class="cart-summary">
+                    <!-- <div class="cart-total">
+                        <span class="total-label">إجمالي السلة:</span>
+                        <span class="total-amount" id="cart-total">0 ريال سعودي</span>
+                    </div> -->
+                    <button class="checkout-button">
+                        <i class="fas fa-shopping-cart"></i>
+                        إتمام الطلب
+                    </button>
                 </div>
             </div>
         </div>
+    </div>
 
-        <div class="cart-table-content">
-            <div class="container">
+    <div class="cart-main">
+        <div class="container">
+            <div class="cart-table-content">
                 <div class="cart">
                     <div class="cart-table-header">
-                        <div class="first-div"></div>
-                        <div class="second-div">اسم المُنتج</div>
-                        <div class="third-div">الكمية</div>
-                        <div class="four-div">الثمن</div>
-                        <div class="last-div"></div>
+                        <div class="product-col">المنتج</div>
+                        <div class="details-col">التفاصيل</div>
+                        <div class="quantity-col">الكمية</div>
+                        <div class="price-col">السعر</div>
+                        <div class="actions-col">إجراءات</div>
                     </div>
 
                     <div class="cart-table">
-                        
+                        <!-- Dynamic content will be loaded here -->
                     </div>
                 </div>
             </div>
-        </div>
 
-
-        <div class="cart-header">
-            <div class="container">
-                <div class="cart-header-content">
-                    <h2 class="cart-title">سلة مشترياتي</h2>
-                    <button class="cart-pay-btn">دفع</button>
+            <div class="cart-summary-section">
+                <div class="cart-summary-box">
+                    <h3 class="summary-title">ملخص الطلب</h3>
+                    <div class="summary-row">
+                        <span>إجمالي المنتجات</span>
+                        <span id="products-total">0 ريال سعودي</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>تكلفة الشحن</span>
+                        <span class="shipping-cost">مجاناً</span>
+                    </div>
+                    <div class="summary-total">
+                        <span>الإجمالي النهائي</span>
+                        <span id="final-total">0 ريال سعودي</span>
+                    </div>
+                    <button class="proceed-checkout">
+                        المتابعة للدفع
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
                 </div>
             </div>
         </div>
-
     </div>
-
-
 
     <footer class="footer">
         <div class="footer-logo-container">
@@ -210,7 +223,7 @@
                 </ul>
             </div>
 
-            
+
 
 
 
@@ -223,7 +236,7 @@
                 </ul>
             </div>
         </div>
-     </footer>
+    </footer>
 
 
     <script src="js/generals.js"></script>
