@@ -283,26 +283,46 @@ const resetQuantity = function (id) {
 // !!! TRASH ICON FUNCTIONS TO DELETE THE PRODUCT FROM CART
 const TrashFromCart_HomePage = function (id) {
   try {
-    let ProductsInCart = safeLocalStorageGet("Cart_Products", []);
-    let productCartContainer = document.querySelector(
+    let cartProducts = safeLocalStorageGet("Cart_Products", []);
+    const productElement = document.querySelector(
       `#sidebar-product-container-${id}`
     );
+    const cartPageElement = document.querySelector(`#product-${id}`);
 
-    let NewProductCart = ProductsInCart.filter((product) => product.id !== id);
-    safeLocalStorageSet("Cart_Products", NewProductCart);
+    if (productElement) {
+      productElement.style.transition = "all 0.3s ease";
+      productElement.style.transform = "translateX(-100%)";
+      productElement.style.opacity = "0";
 
-    resetQuantity(id);
+      // Also animate cart page element if exists
+      if (cartPageElement) {
+        cartPageElement.style.transition = "all 0.3s ease";
+        cartPageElement.style.transform = "translateX(100%)";
+        cartPageElement.style.opacity = "0";
+      }
 
-    if (productCartContainer && SidebarUlDiv) {
-      SidebarUlDiv.removeChild(productCartContainer);
+      setTimeout(() => {
+        productElement.remove();
+        if (cartPageElement) cartPageElement.remove();
+
+        cartProducts = cartProducts.filter((product) => product.id !== id);
+        safeLocalStorageSet("Cart_Products", cartProducts);
+        resetQuantity(id);
+        updateCartState(cartProducts);
+        showNotification("تم حذف المنتج من السلة", "success");
+
+        // If cart is empty in cart page, show empty message
+        if (
+          window.location.pathname.endsWith("cart.html") &&
+          cartProducts.length === 0
+        ) {
+          CartPageDraw();
+        }
+      }, 300);
     }
-
-    // Update cart state with new products array
-    updateCartState(NewProductCart);
-    showNotification("تم حذف المنتج من السلة بنجاح", "success");
   } catch (error) {
-    console.error("Error removing product from cart:", error);
-    showNotification("حدث خطأ في حذف المنتج");
+    console.error("Error removing product:", error);
+    showNotification("حدث خطأ في حذف المنتج", "error");
   }
 };
 
@@ -321,3 +341,59 @@ const TrashFromCart_CartPage = function (id) {
     showNotification("حدث خطأ في حذف المنتج");
   }
 };
+
+// Function to restore cart state
+const restoreCartState = function () {
+  const cartProducts = JSON.parse(localStorage.getItem("Cart_Products")) || [];
+
+  if (SidebarUlDiv) {
+    SidebarUlDiv.innerHTML = "";
+
+    cartProducts.forEach((product) => {
+      const productHtml = `
+                <div id="sidebar-product-container-${product.id}">
+                    <li id="product-${product.id}">
+                        <div class="cart-product-box">
+                            <img src="${product.Image}" alt="">
+                        </div>
+                        <a href="#">
+                            <span class="cart-product-title" onclick="CreateProductPageId(${
+                              product.id
+                            })">
+                                ${product.name}
+                            </span>
+                        </a>
+                        <div class="cart-product-icons">
+                            <button type="button">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>
+                            <button type="button">
+                                <i class="fa-regular fa-trash-can" onclick="TrashFromCart_HomePage(${
+                                  product.id
+                                })"></i>
+                            </button>
+                        </div>
+                    </li>
+                    <div class="cart-product-infos" id="product-div-${
+                      product.id
+                    }">
+                        <span class="cart-product-infos-title">الكمية</span>
+                        <span class="cart-product-quantite" id="quantity-${
+                          product.id
+                        }">${product.quantity}</span>
+                        <span class="cart-product-price">${formatPrice(
+                          product.price
+                        )} ريال سعودي</span>
+                    </div>
+                </div>
+            `;
+      SidebarUlDiv.insertAdjacentHTML("beforeend", productHtml);
+    });
+  }
+  updateCartDisplay(cartProducts);
+};
+
+// Initialize cart on page load
+document.addEventListener("DOMContentLoaded", function () {
+  restoreCartState();
+});

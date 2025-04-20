@@ -15,6 +15,11 @@ const DrawFavoritesProduct = function (id) {
   const product = Products.find((item) => item.id == id);
   if (!product || !favoriteWidget) return;
 
+  // First, clear any "no favorites" message
+  if (favoriteWidget.querySelector(".favorites-empty")) {
+    favoriteWidget.innerHTML = "";
+  }
+
   // Check if product is already in favorites
   if (FavoritesInStorage.some((item) => item.id === id)) return;
 
@@ -70,7 +75,10 @@ const DrawFavroites_FromStorage = function () {
   if (!favoriteWidget) return;
   favoriteWidget.innerHTML = "";
 
-  if (FavoritesInStorage.length === 0) {
+  const favorites =
+    JSON.parse(localStorage.getItem("Favorites_Products")) || [];
+
+  if (favorites.length === 0) {
     favoriteWidget.innerHTML = `
       <div class="favorites-empty">
         <i class="fas fa-heart-broken"></i>
@@ -80,7 +88,7 @@ const DrawFavroites_FromStorage = function () {
     return;
   }
 
-  FavoritesInStorage.forEach(function (item) {
+  favorites.forEach(function (item) {
     const Fav_Storage = `
       <div class="favorite-item" id="favorites-product-${item.id}">
         <div class="fav-img-box">

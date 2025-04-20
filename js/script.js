@@ -7,6 +7,42 @@ const getSecondProducts = () =>
 const getCartProducts = () =>
   JSON.parse(localStorage.getItem("Cart_Products")) || [];
 
+// Add this default second products data
+const defaultSecondProducts = [
+  {
+    id: 1,
+    name: "ساعة اليد الفاخرة ONOLA Watch الأكثر مبيعا",
+    Image: "images/products/watch.jpeg",
+    price: 249,
+    quantity: 1,
+  },
+  {
+    id: 2,
+    name: "غسالة الأكواب الأتوماتيكية Rinser الأكثر مبيعا",
+    Image: "images/products/rinser-cuisine.jpeg",
+    price: 179,
+    quantity: 1,
+  },
+  {
+    id: 3,
+    name: "مجموعة تنظيف الإلكترونيات المتكاملة Cleaner-Set",
+    Image: "images/products/cleaner-set.jpeg",
+    price: 199,
+    quantity: 1,
+  },
+];
+
+// Initialize second products if they don't exist
+const initializeSecondProducts = () => {
+  const existingSecondProducts = localStorage.getItem("Second_Products");
+  if (!existingSecondProducts) {
+    localStorage.setItem(
+      "Second_Products",
+      JSON.stringify(defaultSecondProducts)
+    );
+  }
+};
+
 // !!!! function to add product to cart
 const DontDublicate = function (id) {
   try {
@@ -98,7 +134,7 @@ const initializeCartContents = function () {
   cartProducts.forEach((product) => renderCartWidget(product.id));
 
   // Update cart display
-  updateCartDisplay(cartProducts);
+  updateCartState(cartProducts);
 };
 
 // Update all cart displays
@@ -132,6 +168,8 @@ const DrawHomePageProducts = function () {
   try {
     const products =
       window.Products || JSON.parse(localStorage.getItem("Products")) || [];
+    const favorites =
+      JSON.parse(localStorage.getItem("Favorites_Products")) || [];
 
     if (!products.length) {
       homePageDom.innerHTML =
@@ -140,8 +178,24 @@ const DrawHomePageProducts = function () {
     }
 
     const productsHTML = products
-      .map(
-        (product) => `
+      .map((product) => {
+        const isInFavorites = favorites.some((fav) => fav.id === product.id);
+        const favoriteButton = isInFavorites
+          ? `
+        <span class="favorite-a" id="favorite-a${product.id}" style="cursor: no-drop;">
+          تمت الإضافة للمفضلة
+          <i class="fa-solid fa-heart favorite active-icon" style="color: var(--main-color);"></i>
+        </span>
+      `
+          : `
+        <span class="favorite-a" id="favorite-a${product.id}" onclick="favoritesHomePage_Popup(${product.id})">
+          أضف إلى المفضلة
+          <i class="fa-regular fa-heart favorite"></i>
+          <i class="fa-solid fa-heart favorite active-icon" style="display: none;"></i>
+        </span>
+      `;
+
+        return `
         <div class="product-container">
             <a href="#" class="product-a">
                 <div class="product-img-box">
@@ -154,15 +208,11 @@ const DrawHomePageProducts = function () {
                 </a>
                 <span class="product-price">${product.price} ريال سعودي</span>
                 <button class="product-btn" onclick="DontDublicate(${product.id})">للطلب اضغطي هنا</button>
-                <span href="#" class="favorite-a" id="favorite-a${product.id}" onclick="favoritesHomePage_Popup(${product.id})">
-                    أضف إلى المفضلة
-                    <i class="fa-regular fa-heart favorite"></i>
-                    <i class="fa-solid fa-heart favorite active-icon" style="display: none;"></i>
-                </span>
+                ${favoriteButton}
             </div>
         </div>
-    `
-      )
+    `;
+      })
       .join("");
 
     homePageDom.innerHTML = productsHTML;
@@ -199,14 +249,21 @@ const drawSecondProduct = function () {
   const secondProductDom = document.querySelector(".main-second-product");
   if (!secondProductDom) return;
 
-  const secondProducts = getSecondProducts();
+  let secondProducts = getSecondProducts();
+
+  // Use default products if none exist
+  if (!secondProducts || !secondProducts.length) {
+    secondProducts = defaultSecondProducts;
+    localStorage.setItem("Second_Products", JSON.stringify(secondProducts));
+  }
+
   const SecondProductsHtml = secondProducts
     .map(
       (product) => `
         <div class="product-box">
             <a href="#" class="second-product-link">
                 <div class="second-product-img-box">
-                    <img src=${product.Image} alt="" onclick="CreateSecondProductPageId(${product.id})">
+                    <img src="${product.Image}" alt="${product.name}" onclick="CreateSecondProductPageId(${product.id})">
                 </div>
                 <div class="second-product-product">
                     <h2 class="second-product-product-title">${product.name}</h2>
@@ -221,7 +278,9 @@ const drawSecondProduct = function () {
     )
     .join("");
 
-  secondProductDom.innerHTML = SecondProductsHtml;
+  secondProductDom.innerHTML =
+    SecondProductsHtml ||
+    '<div class="no-products">No products available</div>';
 };
 
 // Add this function to check favorites state
@@ -239,6 +298,19 @@ const updateFavoritesButtonsState = () => {
   });
 };
 
+// Update cart on storage changes
+window.addEventListener("storage", function (e) {
+  if (e.key === "Cart_Products") {
+    restoreCartState();
+  }
+});
+
+// Ensure cart state is maintained on page refresh
+window.addEventListener("beforeunload", function () {
+  const cartProducts = JSON.parse(localStorage.getItem("Cart_Products")) || [];
+  localStorage.setItem("Cart_Products", JSON.stringify(cartProducts));
+});
+
 // Initialize products
 window.addEventListener("productsLoaded", DrawHomePageProducts);
 
@@ -250,13 +322,14 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 document.addEventListener("DOMContentLoaded", () => {
+  initializeSecondProducts();
   const products = getProducts();
   const secondProducts = getSecondProducts();
   if (products.length > 0 || secondProducts.length > 0) {
     DrawHomePageProducts();
     drawSecondProduct();
-    initializeCartContents();
-    updateFavoritesButtonsState(); // Add this line
+    restoreCartState();
+    updateFavoritesButtonsState();
   }
 });
 

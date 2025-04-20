@@ -117,6 +117,36 @@ const closeSidebar = function () {
   }
 };
 
+// Add this centralized updateCartDisplay function
+window.updateCartDisplay = function (cartProducts = []) {
+  try {
+    const total = cartProducts.reduce(
+      (sum, item) => sum + parseFloat(item.price) * parseInt(item.quantity),
+      0
+    );
+
+    if (sidebarCartSumDom)
+      sidebarCartSumDom.innerHTML = `${formatPrice(total)} ريال سعودي`;
+    if (HeaderCartSumDom)
+      HeaderCartSumDom.innerHTML = `${formatPrice(total)} ريال سعودي`;
+
+    const itemCount = cartProducts.length;
+    if (HeaderCartCounter) {
+      HeaderCartCounter.style.display = itemCount > 0 ? "block" : "none";
+      HeaderCartCounter.innerHTML = itemCount;
+    }
+    if (sidebarCartCounter) {
+      sidebarCartCounter.innerHTML = `${itemCount} عناصر`;
+    }
+
+    safeLocalStorageSet("Cart_Products", cartProducts);
+    safeLocalStorageSet("TotalPrice", total);
+    safeLocalStorageSet("Cart_Counter", itemCount);
+  } catch (error) {
+    console.error("Error updating cart display:", error);
+  }
+};
+
 // Event Listeners
 if (CartHeaderLink) {
   CartHeaderLink.addEventListener("click", function (e) {
