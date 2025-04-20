@@ -1,4 +1,8 @@
-// ** products variables & functions here **
+/**
+ * Products, Second Products, Cart, and Favorites Data Management
+ */
+
+// Main products fallback
 const MyProducts = [
   {
     id: 1,
@@ -7,7 +11,6 @@ const MyProducts = [
     price: 349,
     quantity: 1,
   },
-
   {
     id: 2,
     name: "جهاز تبريد مقعد السيارة الذكي Magnetic Fan Car الأكثر مبيعا في العالم",
@@ -15,7 +18,6 @@ const MyProducts = [
     price: 349,
     quantity: 1,
   },
-
   {
     id: 3,
     name: "الشاحن العجيب Three Port Charger الأكثر مبيعا في العالم",
@@ -23,7 +25,6 @@ const MyProducts = [
     price: 349,
     quantity: 1,
   },
-
   {
     id: 4,
     name: "غسالة الأكواب الأتوماتيكية Rinser الأكثر مبيعا في شهر رمضان",
@@ -61,18 +62,48 @@ const MyProducts = [
   },
 ];
 
-// Cache management
+// Second products fallback
+const MySecondProducts = [
+  {
+    id: 1,
+    name: "ساعة اليد الفاخرة ONOLA Watch الأكثر مبيعا في المملكة - إصدار محدود",
+    Image: "images/products/watch.jpeg",
+    price: 349,
+    quantity: 1,
+  },
+  {
+    id: 2,
+    name: "غسالة الأكواب الأتوماتيكية Rinser الأكثر مبيعا في شهر رمضان",
+    Image: "images/products/rinser-cuisine.jpeg",
+    price: 349,
+    quantity: 1,
+  },
+  {
+    id: 3,
+    name: "جهاز تبريد مقعد السيارة الذكي Magnetic Fan Car الأكثر مبيعا في العالم",
+    Image: "images/new-products/car-product.jpeg",
+    price: 349,
+    quantity: 1,
+  },
+];
+
+// Cache keys and duration
 const CACHE_DURATION = 1000 * 60 * 60; // 1 hour
 const CACHE_KEYS = {
   PRODUCTS: "Products",
   SECOND_PRODUCTS: "Second_Products",
+  CART: "Cart_Products",
+  FAVORITES: "Favorite_Products",
   CACHE_TIMESTAMP: "products_cache_timestamp",
 };
 
-// Initialize Products array in global scope
+// Global arrays
 let Products = [];
 let My_Second_Products = [];
+let Cart_Products = [];
+let Favorite_Products = [];
 
+// Cache helpers
 const isCacheValid = () => {
   const timestamp = localStorage.getItem(CACHE_KEYS.CACHE_TIMESTAMP);
   if (!timestamp) return false;
@@ -84,22 +115,40 @@ const setCache = (data, key) => {
   localStorage.setItem(CACHE_KEYS.CACHE_TIMESTAMP, Date.now().toString());
 };
 
-const handleFetchError = (error, fallbackData, key) => {
-  console.error(`Error fetching ${key}:`, error);
-  if (isCacheValid()) {
+const getCache = (key, fallbackData) => {
+  try {
     const cachedData = localStorage.getItem(key);
     if (cachedData) {
       return JSON.parse(cachedData);
     }
+  } catch (error) {
+    console.error(`Error parsing cached ${key}:`, error);
   }
   return fallbackData;
 };
 
-// Initialize products immediately with fallback data
-Products = JSON.parse(localStorage.getItem(CACHE_KEYS.PRODUCTS)) || MyProducts;
-localStorage.setItem(CACHE_KEYS.PRODUCTS, JSON.stringify(Products));
+const handleFetchError = (error, fallbackData, key) => {
+  console.error(`Error fetching ${key}:`, error);
+  if (isCacheValid()) {
+    return getCache(key, fallbackData);
+  }
+  return fallbackData;
+};
 
-// Then try to fetch updated data
+// Initialize all data from localStorage or fallback
+const initializeLocalData = () => {
+  Products = getCache(CACHE_KEYS.PRODUCTS, MyProducts);
+  My_Second_Products = getCache(CACHE_KEYS.SECOND_PRODUCTS, MySecondProducts);
+  Cart_Products = getCache(CACHE_KEYS.CART, []);
+  Favorite_Products = getCache(CACHE_KEYS.FAVORITES, []);
+  // Save to localStorage if not present
+  setCache(Products, CACHE_KEYS.PRODUCTS);
+  setCache(My_Second_Products, CACHE_KEYS.SECOND_PRODUCTS);
+  setCache(Cart_Products, CACHE_KEYS.CART);
+  setCache(Favorite_Products, CACHE_KEYS.FAVORITES);
+};
+
+// Fetch products from API
 const FetchProducts = async () => {
   try {
     const URL = "https://api.jsonbin.io/v3/b/67c54486e41b4d34e49fc194";
@@ -116,27 +165,100 @@ const FetchProducts = async () => {
     }
 
     const data = await response.json();
-    Products = data.record.Products;
+    Products = data.record.Products || MyProducts;
+    My_Second_Products = data.record.Second_Products || MySecondProducts;
     setCache(Products, CACHE_KEYS.PRODUCTS);
-    return Products;
+    setCache(My_Second_Products, CACHE_KEYS.SECOND_PRODUCTS);
+    return { Products, My_Second_Products };
   } catch (err) {
     Products = handleFetchError(err, MyProducts, CACHE_KEYS.PRODUCTS);
-    return Products;
+    My_Second_Products = handleFetchError(
+      err,
+      MySecondProducts,
+      CACHE_KEYS.SECOND_PRODUCTS
+    );
+    return { Products, My_Second_Products };
   }
 };
 
-// Initialize data and dispatch event when ready
+// Cart management
+const addToCart = (product) => {
+  const existingProduct = Cart_Products.find((p) => p.id === product.id);
+  if (existingProduct) {
+    existingProduct.quantity += 1;
+  } else {
+    Cart_Products.push({ ...product, quantity: 1 });
+  }
+  setCache(Cart_Products, CACHE_KEYS.CART);
+  window.dispatchEvent(new Event("cartUpdated"));
+};
+
+const removeFromCart = (productId) => {
+  Cart_Products = Cart_Products.filter((p) => p.id !== productId);
+  setCache(Cart_Products, CACHE_KEYS.CART);
+  window.dispatchEvent(new Event("cartUpdated"));
+};
+
+const updateCartQuantity = (productId, quantity) => {
+  const product = Cart_Products.find((p) => p.id === productId);
+  if (product) {
+    product.quantity = quantity;
+    setCache(Cart_Products, CACHE_KEYS.CART);
+    window.dispatchEvent(new Event("cartUpdated"));
+  }
+};
+
+// Favorites management
+const toggleFavorite = (product) => {
+  const index = Favorite_Products.findIndex((p) => p.id === product.id);
+  if (index >= 0) {
+    Favorite_Products.splice(index, 1);
+  } else {
+    Favorite_Products.push(product);
+  }
+  setCache(Favorite_Products, CACHE_KEYS.FAVORITES);
+  window.dispatchEvent(new Event("favoritesUpdated"));
+};
+
+const isFavorite = (productId) => {
+  return Favorite_Products.some((p) => p.id === productId);
+};
+
+// Initialize data and dispatch events
 const initializeData = async (retryCount = 3) => {
   try {
-    const products = await FetchProducts();
+    initializeLocalData();
+    const {
+      Products: fetchedProducts,
+      My_Second_Products: fetchedSecondProducts,
+    } = await FetchProducts();
+    Products = fetchedProducts;
+    My_Second_Products = fetchedSecondProducts;
     window.dispatchEvent(new Event("productsLoaded"));
+    window.dispatchEvent(new Event("secondProductsLoaded"));
+    window.dispatchEvent(new Event("cartUpdated"));
+    window.dispatchEvent(new Event("favoritesUpdated"));
   } catch (error) {
     console.error("Error initializing data:", error);
     if (retryCount > 0) {
       setTimeout(() => initializeData(retryCount - 1), 2000);
+    } else {
+      window.dispatchEvent(new Event("productsLoaded"));
+      window.dispatchEvent(new Event("secondProductsLoaded"));
+      window.dispatchEvent(new Event("cartUpdated"));
+      window.dispatchEvent(new Event("favoritesUpdated"));
     }
   }
 };
+
+// Export functions for global access
+window.addToCart = addToCart;
+window.removeFromCart = removeFromCart;
+window.updateCartQuantity = updateCartQuantity;
+window.toggleFavorite = toggleFavorite;
+window.isFavorite = isFavorite;
+window.getCartProducts = () => Cart_Products;
+window.getFavoriteProducts = () => Favorite_Products;
 
 // Run initialization
 initializeData();

@@ -25,10 +25,10 @@
     <!-- /import fonts -->
 </head>
 
-<body>
+<body dir="rtl">
 
     <!-- header -->
-    <header class="header" dir="rtl">
+    <header class="header">
         <div class="top-bar">
             <span class="top-bar-title">
                 👈 توصيل مجاني لجميع ربوع المملكة 👉
@@ -38,13 +38,18 @@
         <div class="middle-header">
             <div class="container">
                 <div class="main-header">
+                    <div class="menu-toggle">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
                     <div class="menu-box">
                         <ul class="menu-ul">
-                            <li class="menu-li search-icon"><a href="#" class="menu-a"><i
+                            <li class="menu-li search-icon" id="search-a"><a href="#" class="menu-a"><i
                                         class="fa-solid fa-magnifying-glass"></i></a></li>
                             <li class="menu-li"><a href="index.html" class="menu-a">الصفحة الرئيسية</a></li>
-                            <li class="menu-li"><a href="login.html" class="menu-a"> تسجيل الدخول</a></li>
-                            <li class="menu-li"><a href="register.html" class="menu-a"> إنشاء حساب</a></li>
+                            <li class="menu-li"><a href="favorites.html" class="menu-a">المفضلة</a></li>
+                            <li class="menu-li"><a href="cart.html" class="menu-a">سلة المشتريات</a></li>
                         </ul>
                     </div>
 
@@ -56,42 +61,44 @@
 
                     <div class="cart-box">
                         <div class="cart-box-div">
-                            <a href="#" class="cart-link">
-                                <i class="fa-solid fa-cart-plus" id="cart-icon"></i>
-                                <span class="cart-counter" style="display: block;">0</span>
-                                <span class="cart-span">0 ريال سعودي</span>
-                            </a>
-                        </div>
-                    </div>
-
-                    <div class="cart-sidebar">
-                        <div class="cart-sidebar-header">
-                            <div class="sidebar-header-content">
-                                <h3 class="sidebar-header-title">سلة مشترياتي</h3>
-                                <span class="sidebar-header-span">0 عناصر</span>
+                            <div class="cart-content">
+                                <a href="#" class="cart-link">
+                                    <i class="fa-solid fa-cart-plus" id="cart-icon"></i>
+                                    <span class="cart-counter">0</span>
+                                    <span class="cart-span">0 ريال سعودي</span>
+                                </a>
                             </div>
 
-                            <i class="fa-regular fa-circle-xmark" id="close-sidebar"></i>
-                        </div>
+                            <div class="cart-sidebar">
+                                <div class="cart-sidebar-header">
+                                    <div class="sidebar-header-content">
+                                        <h3 class="sidebar-header-title">سلة مشترياتي</h3>
+                                        <span class="sidebar-header-span">0 عناصر</span>
+                                    </div>
 
-                        <div class="cart-sidebar-products">
-                            <ul class="ul-product-dom">
-                            </ul>
-                        </div>
+                                    <i class="fa-regular fa-circle-xmark" id="close-sidebar"></i>
+                                </div>
 
-                        <div class="sidebar-call-to-action">
-                            <div class="sidebar-first-tab">
-                                <span class="first-tab-title">مجموع سلة التسوق</span>
-                                <span class="first-tab-span" id="cart-sum-span">0 ريال سعودي</span>
-                            </div>
+                                <div class="cart-sidebar-products">
+                                    <ul class="ul-product-dom">
+                                    </ul>
+                                </div>
 
-                            <div class="sidebar-middle-tab">
-                                <a href="cart.html" id="cart-buy-now"> <button class="middle-tab-btn">شراء
-                                        الآن</button> </a>
-                            </div>
+                                <div class="sidebar-call-to-action">
+                                    <div class="sidebar-first-tab">
+                                        <span class="first-tab-title">مجموع سلة التسوق</span>
+                                        <span class="first-tab-span" id="cart-sum-span">0 ريال سعودي</span>
+                                    </div>
 
-                            <div class="sidebar-last-tab">
-                                <button class="last-tab-btn">استمر في التسوق</button>
+                                    <div class="sidebar-middle-tab">
+                                        <a href="cart.html" id="cart-buy-now"> <button class="middle-tab-btn">شراء
+                                                الآن</button> </a>
+                                    </div>
+
+                                    <div class="sidebar-last-tab">
+                                        <button class="last-tab-btn">استمر في التسوق</button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

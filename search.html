@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -26,8 +27,9 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/flat-ui/2.3.0/css/flat-ui.min.css" rel="" />
     <!-- /import fonts -->
 </head>
+
 <body dir="rtl">
-    
+
 
     <!-- header -->
     <header class="header">
@@ -40,18 +42,23 @@
         <div class="middle-header">
             <div class="container">
                 <div class="main-header">
+                    <div class="menu-toggle">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
                     <div class="menu-box">
                         <ul class="menu-ul">
-                            <li class="menu-li search-icon"><a href="#" class="menu-a" id="search-a"><i
+                            <li class="menu-li search-icon" id="search-a"><a href="#" class="menu-a"><i
                                         class="fa-solid fa-magnifying-glass"></i></a></li>
                             <li class="menu-li"><a href="index.html" class="menu-a">الصفحة الرئيسية</a></li>
-                            <li class="menu-li"><a href="login.html" class="menu-a"> تسجيل الدخول</a></li>
-                            <li class="menu-li"><a href="register.html" class="menu-a"> إنشاء حساب</a></li>
+                            <li class="menu-li"><a href="favorites.html" class="menu-a">المفضلة</a></li>
+                            <li class="menu-li"><a href="cart.html" class="menu-a">سلة المشتريات</a></li>
                         </ul>
                     </div>
 
                     <div class="logo-box">
-                        <a href="index.html" class="logo-link">
+                        <a href="#" class="logo-link">
                             <img src="images/logo.png" alt="" class="logo">
                         </a>
                     </div>
@@ -119,7 +126,7 @@
                     السعودية🔥</option>
                 <option value="f75d10c7-c9f6-4a51-af8d-3f480d3dbd00">Beauty</option>
             </select>
-    
+
             <div class="search-input">
                 <input type="search" placeholder="البحث عن منتج" id="search">
                 <button class="search-btn">
@@ -128,7 +135,7 @@
             </div>
         </div>
     </div>
-     <!-- /.end search bar -->
+    <!-- /.end search bar -->
 
 
     <main class="products-sectios">
@@ -136,18 +143,18 @@
         <div class="mycontainer">
             <section class="product-text-content">
                 <h2 class="product-content-title">-- SEARCHED ITEMS --</h2>
-                <span class="product-content-span">This all products that you search for</span> 
+                <span class="product-content-span">This all products that you search for</span>
             </section>
         </div>
 
         <div class="search-empty">
-            
+
         </div>
 
         <!-- products data section -->
         <div class="container">
             <section class="product-data-section" dir="rtl" id="search-product-dom">
-                
+
             </section>
         </div>
 
@@ -168,7 +175,7 @@
                 </div>
 
                 <div class="cart-table">
-                    
+
                 </div>
                 <!-- <div class="cart-table-header">
                     <div class="first-div"></div>
@@ -182,7 +189,7 @@
 
 
         <div class="favorites-call-to-action">
-            <a href="favorites.html"><button class="go-to-favorites" >go to favorites</button></a>
+            <a href="favorites.html"><button class="go-to-favorites">go to favorites</button></a>
             <button class="still-on-page">still on page</button>
         </div>
     </div>
@@ -221,7 +228,7 @@
                 </ul>
             </div>
 
-            
+
 
 
 
@@ -234,7 +241,7 @@
                 </ul>
             </div>
         </div>
-     </footer>
+    </footer>
 
     <script src="js/mydata.js"></script>
     <script src="js/generals.js"></script>
@@ -243,4 +250,5 @@
     <script src="js/script.js"></script>
 
 </body>
+
 </html>
