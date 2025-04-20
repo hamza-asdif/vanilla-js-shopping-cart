@@ -124,65 +124,51 @@ const updateCartDisplay = (cartProducts) => {
   safeLocalStorageSet("Cart_Counter", itemCount);
 };
 
-// !!!! Draw products into home page with error handling
+// Draw products into home page with error handling
 const DrawHomePageProducts = function () {
-  if (window.location.pathname.endsWith("index.html")) {
-    try {
-      let Products = getProducts();
-      const favorites =
-        JSON.parse(localStorage.getItem("Favorites_Products")) || [];
+  const homePageDom = document.querySelector(".product-data-section");
+  if (!homePageDom) return;
 
-      if (Products % 2 !== 0) {
-        Products = Products.slice(0, Products.length - 1);
-      }
+  try {
+    const products =
+      window.Products || JSON.parse(localStorage.getItem("Products")) || [];
 
-      let productsHTML = Products.map((product) => {
-        const isFavorite = favorites.some((fav) => fav.id === product.id);
-        const favoriteButtonHtml = isFavorite
-          ? `<span href="#" class="favorite-a" id="favorite-a${product.id}" style="cursor: no-drop;">
-            تمت الإضافة للمفضلة
-            <i class="fa-regular fa-heart favorite" style="display:none"></i>
-            <i class="fa-solid fa-heart favorite active-icon" style="color: #ff6b6b;"></i>
-          </span>`
-          : `<span href="#" class="favorite-a" id="favorite-a${product.id}" onclick="favoritesHomePage_Popup(${product.id})">
-            أضف إلى المفضلة
-            <i class="fa-regular fa-heart favorite"></i>
-            <i class="fa-solid fa-heart favorite active-icon" style="display: none;"></i>
-          </span>`;
+    if (!products.length) {
+      homePageDom.innerHTML =
+        '<div class="no-products">No products available</div>';
+      return;
+    }
 
-        return `
-          <div class="product-container">
+    const productsHTML = products
+      .map(
+        (product) => `
+        <div class="product-container">
             <a href="#" class="product-a">
                 <div class="product-img-box">
-                    <img src="${
-                      product.Image
-                    }" alt="" class="product-img" onclick="CreateProductPageId(${
-          product.id
-        })">
+                    <img src="${product.Image}" alt="" class="product-img" onclick="CreateProductPageId(${product.id})">
                 </div>
             </a>
             <div class="product-infos-box">
                 <a href="#" class="product-title-link">
                     <h3 class="product-title">${product.name}</h3>
                 </a>
-                <span class="product-old-price">279 ريال سعودي</span>
-                <span class="product-price">${formatPrice(
-                  product.price
-                )} ريال سعودي</span>
-                <button class="product-btn" id="buynow" onclick="DontDublicate(${
-                  product.id
-                })">للطلب اضغطي هنا</button>
-                ${favoriteButtonHtml}
+                <span class="product-price">${product.price} ريال سعودي</span>
+                <button class="product-btn" onclick="DontDublicate(${product.id})">للطلب اضغطي هنا</button>
+                <span href="#" class="favorite-a" id="favorite-a${product.id}" onclick="favoritesHomePage_Popup(${product.id})">
+                    أضف إلى المفضلة
+                    <i class="fa-regular fa-heart favorite"></i>
+                    <i class="fa-solid fa-heart favorite active-icon" style="display: none;"></i>
+                </span>
             </div>
-          </div>`;
-      }).join("");
+        </div>
+    `
+      )
+      .join("");
 
-      HomePageDom.innerHTML = productsHTML;
-    } catch (error) {
-      console.error("Error drawing products:", error);
-      HomePageDom.innerHTML =
-        '<div class="error-message">حدث خطأ أثناء تحميل المنتجات</div>';
-    }
+    homePageDom.innerHTML = productsHTML;
+  } catch (error) {
+    console.error("Error drawing products:", error);
+    homePageDom.innerHTML = '<div class="error">Error loading products</div>';
   }
 };
 
@@ -254,13 +240,15 @@ const updateFavoritesButtonsState = () => {
 };
 
 // Initialize products
-window.addEventListener("productsLoaded", () => {
-  DrawHomePageProducts();
-  drawSecondProduct();
-  initializeCartContents();
+window.addEventListener("productsLoaded", DrawHomePageProducts);
+
+// Also try to draw products on DOMContentLoaded
+document.addEventListener("DOMContentLoaded", function () {
+  if (window.Products) {
+    DrawHomePageProducts();
+  }
 });
 
-// Also initialize if products are already in localStorage
 document.addEventListener("DOMContentLoaded", () => {
   const products = getProducts();
   const secondProducts = getSecondProducts();

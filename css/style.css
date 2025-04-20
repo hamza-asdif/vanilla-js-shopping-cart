@@ -538,3 +538,128 @@ footer {
 .favorite-overlay.fade-out {
   opacity: 0;
 }
+
+/* Responsive Product Grid */
+@media screen and (max-width: 1200px) {
+  .product-data-section {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+}
+
+@media screen and (max-width: 992px) {
+  .product-data-section {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+  }
+
+  .product-box {
+    max-width: none;
+  }
+
+  .product-content-title {
+    font-size: 1.5rem;
+  }
+
+  .product-content-span {
+    font-size: 1rem;
+  }
+}
+
+@media screen and (max-width: 576px) {
+  .product-data-section {
+    grid-template-columns: 1fr;
+    padding: 10px;
+  }
+
+  .product-box {
+    margin: 0 auto;
+    width: 100%;
+    max-width: 320px;
+  }
+
+  .product-img-box {
+    height: 200px;
+  }
+
+  .product-title {
+    font-size: 0.9rem;
+    line-height: 1.4;
+    margin: 8px 0;
+  }
+
+  .product-price {
+    font-size: 1rem;
+  }
+
+  .product-old-price {
+    font-size: 0.9rem;
+  }
+
+  .product-buttons {
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .product-buttons button {
+    width: 100%;
+    padding: 8px;
+    font-size: 0.9rem;
+  }
+
+  /* Enhanced Mobile Hero Section */
+  .main-hero-img {
+    margin-top: 10px;
+  }
+
+  .hero-img-box img {
+    border-radius: 8px;
+  }
+
+  /* Mobile Product Section Headers */
+  .product-text-content {
+    padding: 20px 10px;
+    text-align: center;
+  }
+
+  .last-product-section {
+    padding: 20px 10px;
+  }
+
+  .last-product-h2 {
+    font-size: 1.2rem;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+
+  /* Mobile Features Section */
+  .last-product-products-content {
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px 10px;
+  }
+
+  .last-product-content-box {
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+  }
+}
+
+/* Loading State for Products */
+@keyframes productLoadingPulse {
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0.6;
+  }
+}
+
+.product-loading {
+  animation: productLoadingPulse 1.5s ease-in-out infinite;
+}

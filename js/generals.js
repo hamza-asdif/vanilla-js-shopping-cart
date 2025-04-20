@@ -150,3 +150,41 @@ window.addEventListener("error", function (e) {
   // Show user-friendly error message
   showNotification("حدث خطأ. يرجى المحاولة مرة أخرى");
 });
+
+// Mobile Menu Toggle
+const initMobileMenu = () => {
+  const menuToggle = document.querySelector(".menu-toggle");
+  const menuBox = document.querySelector(".menu-box");
+  const mobileOverlay = document.querySelector(".mobile-overlay");
+
+  if (menuToggle && menuBox && mobileOverlay) {
+    menuToggle.addEventListener("click", () => {
+      menuToggle.classList.toggle("active");
+      menuBox.classList.toggle("active");
+      mobileOverlay.classList.toggle("active");
+      document.body.style.overflow = menuBox.classList.contains("active")
+        ? "hidden"
+        : "";
+    });
+
+    mobileOverlay.addEventListener("click", () => {
+      menuToggle.classList.remove("active");
+      menuBox.classList.remove("active");
+      mobileOverlay.classList.remove("active");
+      document.body.style.overflow = "";
+    });
+
+    // Close menu on window resize (if screen becomes larger)
+    window.addEventListener("resize", () => {
+      if (window.innerWidth > 992) {
+        menuToggle.classList.remove("active");
+        menuBox.classList.remove("active");
+        mobileOverlay.classList.remove("active");
+        document.body.style.overflow = "";
+      }
+    });
+  }
+};
+
+// Initialize mobile menu
+document.addEventListener("DOMContentLoaded", initMobileMenu);
