@@ -2,263 +2,187 @@
  * Products, Second Products, Cart, and Favorites Data Management
  */
 
-// Main products fallback
-const MyProducts = [
-  {
-    id: 1,
-    name: "ساعة اليد الفاخرة ONOLA Watch الأكثر مبيعا في المملكة - إصدار محدود",
-    Image: "images/products/watch.jpeg",
-    price: 349,
-    quantity: 1,
-  },
-  {
-    id: 2,
-    name: "جهاز تبريد مقعد السيارة الذكي Magnetic Fan Car الأكثر مبيعا في العالم",
-    Image: "images/new-products/car-product.jpeg",
-    price: 349,
-    quantity: 1,
-  },
-  {
-    id: 3,
-    name: "الشاحن العجيب Three Port Charger الأكثر مبيعا في العالم",
-    Image: "images/new-products/charger.jpeg",
-    price: 349,
-    quantity: 1,
-  },
-  {
-    id: 4,
-    name: "غسالة الأكواب الأتوماتيكية Rinser الأكثر مبيعا في شهر رمضان",
-    Image: "images/products/rinser-cuisine.jpeg",
-    price: 349,
-    quantity: 1,
-  },
-  {
-    id: 5,
-    name: "الأكثر طلبًا عند النساء حقيبة الماكياج الفاخرة Vergi",
-    Image: "images/products/vergi%20sac.jpeg",
-    price: 180,
-    quantity: 1,
-  },
-  {
-    id: 6,
-    name: "مصحح قوام الجسم Shapewear الأصلي و الأكثر مبيعا في العالم",
-    Image: "images/products/shapeware.jpeg",
-    price: 199,
-    quantity: 1,
-  },
-  {
-    id: 7,
-    name: "المصباح الكرستالي الأنيق Carluxy الجديد لسنة 2023",
-    Image: "images/products/crystal.webp",
-    price: 309,
-    quantity: 1,
-  },
-  {
-    id: 8,
-    name: "منعم بشرة الأقدام الأصلي Marlo-X الأكثر مبيعا في العالم",
-    Image: "images/products/marlox.webp",
-    price: 199,
-    quantity: 1,
-  },
-];
+// Base URL for assets
+const BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+  ? '' 
+  : window.location.origin;
 
-// Second products fallback
-const MySecondProducts = [
-  {
-    id: 1,
-    name: "ساعة اليد الفاخرة ONOLA Watch الأكثر مبيعا في المملكة - إصدار محدود",
-    Image: "images/products/watch.jpeg",
-    price: 349,
-    quantity: 1,
-  },
-  {
-    id: 2,
-    name: "غسالة الأكواب الأتوماتيكية Rinser الأكثر مبيعا في شهر رمضان",
-    Image: "images/products/rinser-cuisine.jpeg",
-    price: 349,
-    quantity: 1,
-  },
-  {
-    id: 3,
-    name: "جهاز تبريد مقعد السيارة الذكي Magnetic Fan Car الأكثر مبيعا في العالم",
-    Image: "images/new-products/car-product.jpeg",
-    price: 349,
-    quantity: 1,
-  },
-];
-
-// Cache keys and duration
+// Cache Configuration
 const CACHE_DURATION = 1000 * 60 * 60; // 1 hour
 const CACHE_KEYS = {
-  PRODUCTS: "Products",
-  SECOND_PRODUCTS: "Second_Products",
-  CART: "Cart_Products",
-  FAVORITES: "Favorite_Products",
-  CACHE_TIMESTAMP: "products_cache_timestamp",
+  PRODUCTS: 'Products',
+  SECOND_PRODUCTS: 'Second_Products',
+  CART: 'Cart_Products',
+  FAVORITES: 'Favorites_Products',
+  CACHE_TIMESTAMP: 'products_cache_timestamp'
 };
 
-// Global arrays
-let Products = [];
-let My_Second_Products = [];
-let Cart_Products = [];
-let Favorite_Products = [];
-
-// Cache helpers
-const isCacheValid = () => {
-  const timestamp = localStorage.getItem(CACHE_KEYS.CACHE_TIMESTAMP);
-  if (!timestamp) return false;
-  return Date.now() - parseInt(timestamp) < CACHE_DURATION;
+// Product data validation
+const validateProduct = (product) => {
+  return product 
+    && typeof product === 'object'
+    && typeof product.id === 'number'
+    && typeof product.name === 'string'
+    && typeof product.price === 'number'
+    && typeof product.Image === 'string'
+    && typeof product.quantity === 'number';
 };
 
-const setCache = (data, key) => {
-  localStorage.setItem(key, JSON.stringify(data));
-  localStorage.setItem(CACHE_KEYS.CACHE_TIMESTAMP, Date.now().toString());
-};
-
-const getCache = (key, fallbackData) => {
+// Safe storage operations with validation
+const safeGetFromStorage = (key, defaultValue = []) => {
   try {
-    const cachedData = localStorage.getItem(key);
-    if (cachedData) {
-      return JSON.parse(cachedData);
+    const data = localStorage.getItem(key);
+    if (!data) return defaultValue;
+    const parsed = JSON.parse(data);
+    
+    // Validate data structure based on key
+    if (key === CACHE_KEYS.CART || key === CACHE_KEYS.PRODUCTS || key === CACHE_KEYS.SECOND_PRODUCTS) {
+      if (!Array.isArray(parsed)) return defaultValue;
+      return parsed.filter(validateProduct);
     }
+    return parsed;
   } catch (error) {
-    console.error(`Error parsing cached ${key}:`, error);
+    console.error(`Error reading ${key} from storage:`, error);
+    return defaultValue;
   }
-  return fallbackData;
 };
 
-const handleFetchError = (error, fallbackData, key) => {
-  console.error(`Error fetching ${key}:`, error);
-  if (isCacheValid()) {
-    return getCache(key, fallbackData);
-  }
-  return fallbackData;
-};
-
-// Initialize all data from localStorage or fallback
-const initializeLocalData = () => {
-  Products = getCache(CACHE_KEYS.PRODUCTS, MyProducts);
-  My_Second_Products = getCache(CACHE_KEYS.SECOND_PRODUCTS, MySecondProducts);
-  Cart_Products = getCache(CACHE_KEYS.CART, []);
-  Favorite_Products = getCache(CACHE_KEYS.FAVORITES, []);
-  // Save to localStorage if not present
-  setCache(Products, CACHE_KEYS.PRODUCTS);
-  setCache(My_Second_Products, CACHE_KEYS.SECOND_PRODUCTS);
-  setCache(Cart_Products, CACHE_KEYS.CART);
-  setCache(Favorite_Products, CACHE_KEYS.FAVORITES);
-};
-
-// Fetch products from API
-const FetchProducts = async () => {
+const safeSetToStorage = (key, value) => {
   try {
-    const URL = "https://api.jsonbin.io/v3/b/67c54486e41b4d34e49fc194";
-    const response = await fetch(URL, {
-      headers: {
-        "Content-Type": "application/json",
-        "X-Master-Key":
-          "$2a$10$JSduiJIAxlAAiB5UQSJ9n.rCUN94IKEeZ8QwNDmKsxfCuURp/m3Xe",
-      },
-    });
+    localStorage.setItem(key, JSON.stringify(value));
+    return true;
+  } catch (error) {
+    console.error(`Error saving ${key} to storage:`, error);
+    return false;
+  }
+};
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+// Cart state management
+let Cart_Products = safeGetFromStorage(CACHE_KEYS.CART, []);
+
+const addToCart = (product) => {
+  try {
+    if (!validateProduct(product)) {
+      throw new Error('Invalid product format');
     }
 
-    const data = await response.json();
-    Products = data.record.Products || MyProducts;
-    My_Second_Products = data.record.Second_Products || MySecondProducts;
-    setCache(Products, CACHE_KEYS.PRODUCTS);
-    setCache(My_Second_Products, CACHE_KEYS.SECOND_PRODUCTS);
-    return { Products, My_Second_Products };
-  } catch (err) {
-    Products = handleFetchError(err, MyProducts, CACHE_KEYS.PRODUCTS);
-    My_Second_Products = handleFetchError(
-      err,
-      MySecondProducts,
-      CACHE_KEYS.SECOND_PRODUCTS
-    );
-    return { Products, My_Second_Products };
-  }
-};
+    const existingProductIndex = Cart_Products.findIndex(p => p.id === product.id);
+    if (existingProductIndex >= 0) {
+      Cart_Products[existingProductIndex].quantity += 1;
+    } else {
+      Cart_Products.push({ ...product, quantity: 1 });
+    }
 
-// Cart management
-const addToCart = (product) => {
-  const existingProduct = Cart_Products.find((p) => p.id === product.id);
-  if (existingProduct) {
-    existingProduct.quantity += 1;
-  } else {
-    Cart_Products.push({ ...product, quantity: 1 });
+    safeSetToStorage(CACHE_KEYS.CART, Cart_Products);
+    window.dispatchEvent(new CustomEvent('cartUpdated', { 
+      detail: { 
+        products: Cart_Products,
+        total: calculateCartTotal(),
+        count: Cart_Products.length
+      }
+    }));
+    
+    return true;
+  } catch (error) {
+    console.error('Error adding to cart:', error);
+    return false;
   }
-  setCache(Cart_Products, CACHE_KEYS.CART);
-  window.dispatchEvent(new Event("cartUpdated"));
 };
 
 const removeFromCart = (productId) => {
-  Cart_Products = Cart_Products.filter((p) => p.id !== productId);
-  setCache(Cart_Products, CACHE_KEYS.CART);
-  window.dispatchEvent(new Event("cartUpdated"));
+  try {
+    Cart_Products = Cart_Products.filter(p => p.id !== productId);
+    safeSetToStorage(CACHE_KEYS.CART, Cart_Products);
+    window.dispatchEvent(new CustomEvent('cartUpdated', { 
+      detail: { 
+        products: Cart_Products,
+        total: calculateCartTotal(),
+        count: Cart_Products.length
+      }
+    }));
+    return true;
+  } catch (error) {
+    console.error('Error removing from cart:', error);
+    return false;
+  }
 };
 
 const updateCartQuantity = (productId, quantity) => {
-  const product = Cart_Products.find((p) => p.id === productId);
-  if (product) {
-    product.quantity = quantity;
-    setCache(Cart_Products, CACHE_KEYS.CART);
-    window.dispatchEvent(new Event("cartUpdated"));
-  }
-};
-
-// Favorites management
-const toggleFavorite = (product) => {
-  const index = Favorite_Products.findIndex((p) => p.id === product.id);
-  if (index >= 0) {
-    Favorite_Products.splice(index, 1);
-  } else {
-    Favorite_Products.push(product);
-  }
-  setCache(Favorite_Products, CACHE_KEYS.FAVORITES);
-  window.dispatchEvent(new Event("favoritesUpdated"));
-};
-
-const isFavorite = (productId) => {
-  return Favorite_Products.some((p) => p.id === productId);
-};
-
-// Initialize data and dispatch events
-const initializeData = async (retryCount = 3) => {
   try {
-    initializeLocalData();
-    const {
-      Products: fetchedProducts,
-      My_Second_Products: fetchedSecondProducts,
-    } = await FetchProducts();
-    Products = fetchedProducts;
-    My_Second_Products = fetchedSecondProducts;
-    window.dispatchEvent(new Event("productsLoaded"));
-    window.dispatchEvent(new Event("secondProductsLoaded"));
-    window.dispatchEvent(new Event("cartUpdated"));
-    window.dispatchEvent(new Event("favoritesUpdated"));
+    if (quantity < 1 || quantity > 99) return false;
+    
+    const productIndex = Cart_Products.findIndex(p => p.id === productId);
+    if (productIndex === -1) return false;
+    
+    Cart_Products[productIndex].quantity = quantity;
+    safeSetToStorage(CACHE_KEYS.CART, Cart_Products);
+    window.dispatchEvent(new CustomEvent('cartUpdated', { 
+      detail: { 
+        products: Cart_Products,
+        total: calculateCartTotal(),
+        count: Cart_Products.length
+      }
+    }));
+    return true;
   } catch (error) {
-    console.error("Error initializing data:", error);
-    if (retryCount > 0) {
-      setTimeout(() => initializeData(retryCount - 1), 2000);
-    } else {
-      window.dispatchEvent(new Event("productsLoaded"));
-      window.dispatchEvent(new Event("secondProductsLoaded"));
-      window.dispatchEvent(new Event("cartUpdated"));
-      window.dispatchEvent(new Event("favoritesUpdated"));
-    }
+    console.error('Error updating cart quantity:', error);
+    return false;
   }
 };
 
-// Export functions for global access
+const calculateCartTotal = () => {
+  return Cart_Products.reduce((total, item) => {
+    return total + (item.price * item.quantity);
+  }, 0);
+};
+
+// Products state management
+const initializeProducts = async () => {
+  try {
+    // First try to load from cache
+    let products = safeGetFromStorage(CACHE_KEYS.PRODUCTS, MyProducts);
+    let secondProducts = safeGetFromStorage(CACHE_KEYS.SECOND_PRODUCTS, MySecondProducts);
+    
+    // Fix image paths
+    products = products.map(product => ({
+      ...product,
+      Image: product.Image.startsWith('http') ? 
+        product.Image : 
+        `${BASE_URL}/${product.Image.replace(/^\//, '')}`
+    }));
+    
+    secondProducts = secondProducts.map(product => ({
+      ...product,
+      Image: product.Image.startsWith('http') ? 
+        product.Image : 
+        `${BASE_URL}/${product.Image.replace(/^\//, '')}`
+    }));
+    
+    // Save back to storage with fixed paths
+    safeSetToStorage(CACHE_KEYS.PRODUCTS, products);
+    safeSetToStorage(CACHE_KEYS.SECOND_PRODUCTS, secondProducts);
+    
+    // Dispatch events
+    window.dispatchEvent(new CustomEvent('productsLoaded', { 
+      detail: { products, secondProducts } 
+    }));
+    
+    return { products, secondProducts };
+  } catch (error) {
+    console.error('Error initializing products:', error);
+    return { 
+      products: MyProducts, 
+      secondProducts: MySecondProducts 
+    };
+  }
+};
+
+// Export functions and initialize
 window.addToCart = addToCart;
 window.removeFromCart = removeFromCart;
 window.updateCartQuantity = updateCartQuantity;
-window.toggleFavorite = toggleFavorite;
-window.isFavorite = isFavorite;
 window.getCartProducts = () => Cart_Products;
-window.getFavoriteProducts = () => Favorite_Products;
+window.calculateCartTotal = calculateCartTotal;
 
-// Run initialization
-initializeData();
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', initializeProducts);
