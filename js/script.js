@@ -1,20 +1,11 @@
 let HomePageDom = document.querySelector(".product-data-section");
 
-// Data access functions
-const getProducts = () => {
-  const products = JSON.parse(localStorage.getItem("Products"));
-  return products || [];
-};
-
-const getSecondProducts = () => {
-  const products = JSON.parse(localStorage.getItem("Second_Products"));
-  return products || [];
-};
-
-const getCartProducts = () => {
-  const products = JSON.parse(localStorage.getItem("Cart_Products"));
-  return products || [];
-};
+// Single source of truth for products data
+const getProducts = () => JSON.parse(localStorage.getItem("Products")) || [];
+const getSecondProducts = () =>
+  JSON.parse(localStorage.getItem("Second_Products")) || [];
+const getCartProducts = () =>
+  JSON.parse(localStorage.getItem("Cart_Products")) || [];
 
 // Add this default second products data
 const defaultSecondProducts = [
@@ -169,59 +160,65 @@ const updateCartDisplay = (cartProducts) => {
   safeLocalStorageSet("Cart_Counter", itemCount);
 };
 
-// Add error boundaries to product drawing
+// Draw products into home page with error handling
 const DrawHomePageProducts = function () {
   const homePageDom = document.querySelector(".product-data-section");
   if (!homePageDom) return;
 
   try {
-    const products = getProducts();
+    const products =
+      window.Products || JSON.parse(localStorage.getItem("Products")) || [];
     const favorites =
       JSON.parse(localStorage.getItem("Favorites_Products")) || [];
 
-    if (!products || !products.length) {
+    if (!products.length) {
       homePageDom.innerHTML =
-        '<div class="no-products">جاري تحميل المنتجات...</div>';
+        '<div class="no-products">No products available</div>';
       return;
     }
 
     const productsHTML = products
       .map((product) => {
-        if (!product || !product.id) return "";
-
         const isInFavorites = favorites.some((fav) => fav.id === product.id);
         const favoriteButton = isInFavorites
-          ? `<span class="favorite-a" id="favorite-a${product.id}" style="cursor: no-drop;">
-              تمت الإضافة للمفضلة
-              <i class="fa-solid fa-heart favorite active-icon" style="color: var(--main-color);"></i>
-             </span>`
-          : `<span class="favorite-a" id="favorite-a${product.id}">
-              أضف للمفضلة
-              <i class="fa-regular fa-heart favorite"></i>
-              <i class="fa-solid fa-heart favorite active-icon" style="display: none;"></i>
-             </span>`;
+          ? `
+        <span class="favorite-a" id="favorite-a${product.id}" style="cursor: no-drop;">
+          تمت الإضافة للمفضلة
+          <i class="fa-solid fa-heart favorite active-icon" style="color: var(--main-color);"></i>
+        </span>
+      `
+          : `
+        <span class="favorite-a" id="favorite-a${product.id}" onclick="favoritesHomePage_Popup(${product.id})">
+          أضف إلى المفضلة
+          <i class="fa-regular fa-heart favorite"></i>
+          <i class="fa-solid fa-heart favorite active-icon" style="display: none;"></i>
+        </span>
+      `;
 
         return `
-          <div class="product-container">
-            <div class="product-img-box">
-              <img src="${product.Image}" alt="${product.name}" loading="lazy" onclick="CreateProductPageId(${product.id})">
-            </div>
+        <div class="product-container">
+            <a href="#" class="product-a">
+                <div class="product-img-box">
+                    <img src="${product.Image}" alt="" class="product-img" onclick="CreateProductPageId(${product.id})">
+                </div>
+            </a>
             <div class="product-infos-box">
-              <h2 class="product-title">${product.name}</h2>
-              <span class="product-price">${product.price} ريال سعودي</span>
-              <button class="product-btn" onclick="DontDublicate(${product.id})">للطلب اضغطي هنا</button>
-              ${favoriteButton}
+                <a href="#" class="product-title-link">
+                    <h3 class="product-title">${product.name}</h3>
+                </a>
+                <span class="product-price">${product.price} ريال سعودي</span>
+                <button class="product-btn" onclick="DontDublicate(${product.id})">للطلب اضغطي هنا</button>
+                ${favoriteButton}
             </div>
-          </div>`;
+        </div>
+    `;
       })
       .join("");
 
-    homePageDom.innerHTML =
-      productsHTML || '<div class="no-products">لا توجد منتجات متاحة</div>';
+    homePageDom.innerHTML = productsHTML;
   } catch (error) {
     console.error("Error drawing products:", error);
-    homePageDom.innerHTML =
-      '<div class="error">حدث خطأ في تحميل المنتجات</div>';
+    homePageDom.innerHTML = '<div class="error">Error loading products</div>';
   }
 };
 
@@ -301,53 +298,39 @@ const updateFavoritesButtonsState = () => {
   });
 };
 
-// Initialize app state
-const initializeApp = () => {
-  try {
-    // Draw products only if we're on the home page
-    if (
-      window.location.pathname.endsWith("index.html") ||
-      window.location.pathname === "/"
-    ) {
-      DrawHomePageProducts();
-      drawSecondProduct();
-    }
-
-    // These should run on all pages
+// Update cart on storage changes
+window.addEventListener("storage", function (e) {
+  if (e.key === "Cart_Products") {
     restoreCartState();
-    updateFavoritesButtonsState();
-
-    // Set up storage event listeners for real-time updates
-    window.addEventListener("storage", (e) => {
-      if (e.key === "Cart_Products") {
-        restoreCartState();
-      } else if (e.key === "Favorites_Products") {
-        updateFavoritesButtonsState();
-      }
-    });
-  } catch (error) {
-    console.error("Error initializing app:", error);
   }
-};
-
-// Wait for both DOM and products to be ready
-let isDomReady = false;
-let isDataReady = false;
-
-const tryInitialize = () => {
-  if (isDomReady && isDataReady) {
-    initializeApp();
-  }
-};
-
-document.addEventListener("DOMContentLoaded", () => {
-  isDomReady = true;
-  tryInitialize();
 });
 
-window.addEventListener("productsLoaded", () => {
-  isDataReady = true;
-  tryInitialize();
+// Ensure cart state is maintained on page refresh
+window.addEventListener("beforeunload", function () {
+  const cartProducts = JSON.parse(localStorage.getItem("Cart_Products")) || [];
+  localStorage.setItem("Cart_Products", JSON.stringify(cartProducts));
+});
+
+// Initialize products
+window.addEventListener("productsLoaded", DrawHomePageProducts);
+
+// Also try to draw products on DOMContentLoaded
+document.addEventListener("DOMContentLoaded", function () {
+  if (window.Products) {
+    DrawHomePageProducts();
+  }
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  initializeSecondProducts();
+  const products = getProducts();
+  const secondProducts = getSecondProducts();
+  if (products.length > 0 || secondProducts.length > 0) {
+    DrawHomePageProducts();
+    drawSecondProduct();
+    restoreCartState();
+    updateFavoritesButtonsState();
+  }
 });
 
 const storedProducts = JSON.parse(localStorage.getItem("Products"));

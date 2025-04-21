@@ -1,156 +1,258 @@
 // DOM Elements
 let CartContainer = document.querySelector(".cart");
 let favoriteContainer = document.querySelector(".favorites-container");
+let FavoritesInStorage =
+  JSON.parse(localStorage.getItem("Favorites_Products")) || [];
 
-// Safe localStorage operations
-const safeGetFavorites = () => {
-  try {
-    return JSON.parse(localStorage.getItem("Favorites_Products")) || [];
-  } catch (error) {
-    console.error("Error reading favorites:", error);
-    return [];
+// !!!! functions to DRAW FAVORITES PRODUCT IN WIDGET - HOME PAGE ------------
+const DrawFavoritesProduct = function (id) {
+  if (
+    !window.location.pathname.endsWith("index.html") &&
+    !window.location.pathname.endsWith("search.html")
+  )
+    return;
+
+  const product = Products.find((item) => item.id == id);
+  if (!product || !favoriteWidget) return;
+
+  // First, clear any "no favorites" message
+  if (favoriteWidget.querySelector(".favorites-empty")) {
+    favoriteWidget.innerHTML = "";
   }
+
+  // Check if product is already in favorites
+  if (FavoritesInStorage.some((item) => item.id === id)) return;
+
+  const CurrentProduct = `<div class="favorite-item" id="favorites-product-${product.id}">
+        <div class="fav-img-box">
+            <img src="${product.Image}" alt="" onclick="driveProducts(${product.id})">
+        </div>
+        <div class="fav-details">
+            <h4 class="fav-title" onclick="driveProducts(${product.id})">${product.name}</h4>
+            <div class="fav-price">${product.price} ريال سعودي</div>
+        </div>
+        <div class="fav-actions">
+            <button class="fav-add-to-cart" onclick="addToCartFromFavorites(${product.id})">
+                <i class="fas fa-shopping-cart"></i> إضافة للسلة
+            </button>
+            <button class="favorite-remove" onclick="trashFavorite(${product.id})">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+    </div>`;
+
+  favoriteWidget.insertAdjacentHTML("beforeend", CurrentProduct);
+  FavoritesProductsToStorage(product);
+  updateFavoriteButton(id, true);
 };
 
-const safeSaveFavorites = (favorites) => {
-  try {
-    localStorage.setItem("Favorites_Products", JSON.stringify(favorites));
-    return true;
-  } catch (error) {
-    console.error("Error saving favorites:", error);
-    return false;
-  }
+const updateFavoriteButton = function (id, isFavorite) {
+  const favButton = document.querySelector(`#favorite-a${id}`);
+  if (!favButton) return;
+
+  favButton.style.cursor = isFavorite ? "no-drop" : "pointer";
+  favButton.innerHTML = isFavorite
+    ? `تمت اضافته الى السلة
+        <i class="fa-regular fa-heart favorite" style="display:none"></i>
+        <i class="fa-solid fa-heart favorite active-icon"></i>`
+    : `أضف إلى المفضلة
+        <i class="fa-regular fa-heart favorite"></i>
+        <i class="fa-solid fa-heart favorite active-icon" style="display: none;"></i>`;
 };
 
-// Favorites state management
-let FavoritesInStorage = safeGetFavorites();
+const FavoritesProductsToStorage = function (product) {
+  if (!product || FavoritesInStorage.some((item) => item.id === product.id))
+    return;
 
-const updateFavoriteButton = (id, isFavorite) => {
-  const button = document.querySelector(`#favorite-a${id}`);
-  if (!button) return;
-
-  if (isFavorite) {
-    button.style.cursor = "no-drop";
-    button.innerHTML = `
-      تمت الإضافة للمفضلة
-      <i class="fa-solid fa-heart favorite active-icon" style="color: var(--main-color);"></i>
-    `;
-  } else {
-    button.style.cursor = "pointer";
-    button.innerHTML = `
-      أضف للمفضلة
-      <i class="fa-regular fa-heart favorite"></i>
-      <i class="fa-solid fa-heart favorite active-icon" style="display: none;"></i>
-    `;
-  }
+  FavoritesInStorage.push(product);
+  localStorage.setItem(
+    "Favorites_Products",
+    JSON.stringify(FavoritesInStorage)
+  );
 };
 
-// Draw favorites in widget
 const DrawFavroites_FromStorage = function () {
   if (!favoriteWidget) return;
+  favoriteWidget.innerHTML = "";
 
-  try {
-    favoriteWidget.innerHTML = "";
-    const favorites = safeGetFavorites();
+  const favorites =
+    JSON.parse(localStorage.getItem("Favorites_Products")) || [];
 
-    if (favorites.length === 0) {
-      favoriteWidget.innerHTML = `
-        <div class="favorites-empty">
-          <i class="fas fa-heart-broken"></i>
-          <h3>لا توجد منتجات في المفضلة</h3>
-          <p>يمكنك إضافة المنتجات التي تعجبك إلى المفضلة</p>
-        </div>`;
-      return;
+  if (favorites.length === 0) {
+    favoriteWidget.innerHTML = `
+      <div class="favorites-empty">
+        <i class="fas fa-heart-broken"></i>
+        <h3>لا توجد منتجات في المفضلة</h3>
+        <p>يمكنك إضافة المنتجات التي تعجبك إلى المفضلة</p>
+      </div>`;
+    return;
+  }
+
+  favorites.forEach(function (item) {
+    const Fav_Storage = `
+      <div class="favorite-item" id="favorites-product-${item.id}">
+        <div class="fav-img-box">
+          <img src="${item.Image}" alt="${item.name}" onclick="driveProducts(${item.id})">
+        </div>
+        <div class="fav-details">
+          <h4 class="fav-title">${item.name}</h4>
+          <div class="fav-price">${item.price} ريال سعودي</div>
+        </div>
+        <div class="fav-actions">
+          <button class="fav-add-to-cart" onclick="addToCartFromFavorites(${item.id})">
+            <i class="fas fa-shopping-cart"></i>
+            إضافة للسلة
+          </button>
+          <button class="favorite-remove" onclick="trashFavorite(${item.id})">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </div>
+    `;
+    favoriteWidget.insertAdjacentHTML("beforeend", Fav_Storage);
+  });
+};
+
+const closeFavoritesWidget = () => {
+  if (favoriteContainer && Overlay) {
+    favoriteContainer.style.display = "none";
+    Overlay.style.display = "none";
+  }
+};
+
+// Make favoritesHomePage_Popup available globally
+window.favoritesHomePage_Popup = function (id) {
+  const isAlreadyInFavorites = FavoritesInStorage.some(
+    (item) => item.id === id
+  );
+
+  if (isAlreadyInFavorites) {
+    showNotification("هذا المنتج موجود بالفعل في المفضلة", "info");
+    return;
+  }
+
+  const product = Products.find((item) => item.id === id);
+  if (!product) return;
+
+  const popup = document.createElement("div");
+  popup.className = "favorite-popup";
+  popup.innerHTML = `
+    <div class="favorite-popup-content">
+      <button class="close-popup-btn">&times;</button>
+      <div class="popup-icon">
+        <i class="fa-solid fa-heart" style="font-size: 3rem; color: var(--main-color);"></i>
+      </div>
+      <h3>إضافة للمفضلة</h3>
+      <p>هل تريد إضافة "${product.name}" إلى قائمة المفضلة الخاصة بك؟</p>
+      <div class="popup-buttons">
+        <button class="confirm-favorite">
+          <i class="fa-solid fa-heart"></i>
+          إضافة للمفضلة
+        </button>
+        <button class="cancel-favorite">
+          <i class="fa-solid fa-times"></i>
+          إلغاء
+        </button>
+      </div>
+    </div>
+  `;
+
+  const overlay = document.createElement("div");
+  overlay.className = "overlay favorite-overlay";
+
+  // Remove any existing popups
+  document
+    .querySelectorAll(".favorite-popup, .favorite-overlay")
+    .forEach((el) => el.remove());
+
+  document.body.appendChild(overlay);
+  document.body.appendChild(popup);
+
+  const closePopup = () => {
+    popup.classList.add("fade-out");
+    overlay.classList.add("fade-out");
+    setTimeout(() => {
+      popup.remove();
+      overlay.remove();
+    }, 300);
+  };
+
+  popup.querySelector(".close-popup-btn").addEventListener("click", closePopup);
+  popup.querySelector(".cancel-favorite").addEventListener("click", closePopup);
+  overlay.addEventListener("click", closePopup);
+
+  popup.querySelector(".confirm-favorite").addEventListener("click", () => {
+    const Added_to_Favorites = document.querySelector(
+      `#favorites-product-${id}`
+    );
+    if (!Added_to_Favorites) {
+      DrawFavoritesProduct(id);
     }
 
-    favorites.forEach(function (item) {
-      const favHtml = `
-        <div class="favorite-item" id="favorites-product-${item.id}">
-          <div class="fav-img-box">
-            <img src="${item.Image}" alt="${item.name}" onclick="driveProducts(${item.id})">
-          </div>
-          <div class="fav-product-info">
-            <h3 class="fav-product-title">${item.name}</h3>
-            <span class="fav-product-price">${item.price} ريال سعودي</span>
-            <div class="fav-actions">
-              <button onclick="addToCartFromFavorites(${item.id})" class="add-to-cart-btn">
-                <i class="fas fa-cart-plus"></i>
-                أضف إلى السلة
-              </button>
-              <button onclick="removeFavorite(${item.id})" class="remove-favorite-btn">
-                <i class="fas fa-trash"></i>
-              </button>
-            </div>
-          </div>
-        </div>`;
-      favoriteWidget.insertAdjacentHTML("beforeend", favHtml);
+    if (CartContainer && Overlay && favoriteContainer) {
+      CartContainer.style.scale = "1";
+      Overlay.style.display = "block";
+      favoriteContainer.style.display = "block";
+    }
+    closePopup();
+  });
+};
+
+const trashFavorite = function () {
+  FavoritesInStorage.forEach(function (element) {
+    const button = document.querySelector(`#trash-${element.id}`);
+    const FavoriteDomChild = document.querySelector(
+      `#favorites-product-${element.id}`
+    );
+    if (!button || !FavoriteDomChild) return;
+
+    button.addEventListener("click", function () {
+      FavoritesInStorage = FavoritesInStorage.filter(
+        (item) => item.id != element.id
+      );
+      localStorage.setItem(
+        "Favorites_Products",
+        JSON.stringify(FavoritesInStorage)
+      );
+      FavoriteDomChild.remove();
+      updateFavoriteButton(element.id, false);
     });
-  } catch (error) {
-    console.error("Error drawing favorites:", error);
-    favoriteWidget.innerHTML =
-      '<div class="error">حدث خطأ في تحميل المفضلة</div>';
-  }
+  });
 };
 
-// Add to favorites
-const AddToFavorites = function (id) {
-  try {
-    const product = Products.find((item) => item.id === id);
-    if (!product) return;
-
-    if (FavoritesInStorage.some((item) => item.id === id)) {
-      showNotification("هذا المنتج موجود بالفعل في المفضلة");
-      return;
+function ForFavotitePage() {
+  if (window.location.pathname.endsWith("favorites.html")) {
+    if (CartContainer) CartContainer.style.scale = "1";
+    if (favoriteContainer) {
+      favoriteContainer.removeAttribute("class");
+      favoriteContainer.setAttribute("class", "new-favorite-page");
     }
-
-    FavoritesInStorage.push(product);
-    safeSaveFavorites(FavoritesInStorage);
+    // Initialize favorites content
     DrawFavroites_FromStorage();
-    updateFavoriteButton(id, true);
-    showNotification("تمت إضافة المنتج إلى المفضلة بنجاح", "success");
-  } catch (error) {
-    console.error("Error adding to favorites:", error);
-    showNotification("حدث خطأ في إضافة المنتج إلى المفضلة");
   }
-};
+}
 
-// Remove from favorites
-const removeFavorite = function (id) {
-  try {
-    const favElement = document.querySelector(`#favorites-product-${id}`);
-    if (favElement) {
-      favElement.style.animation = "fadeOut 0.3s ease forwards";
-      setTimeout(() => {
-        FavoritesInStorage = FavoritesInStorage.filter(
-          (item) => item.id !== id
-        );
-        safeSaveFavorites(FavoritesInStorage);
-        DrawFavroites_FromStorage();
-        updateFavoriteButton(id, false);
-        showNotification("تم إزالة المنتج من المفضلة", "success");
-      }, 300);
-    }
-  } catch (error) {
-    console.error("Error removing from favorites:", error);
-    showNotification("حدث خطأ في إزالة المنتج من المفضلة");
-  }
-};
-
-// Add to cart from favorites
+// New function to handle adding to cart from favorites
 const addToCartFromFavorites = function (id) {
   closeFavoritesWidget();
   setTimeout(() => {
     DontDublicate(id);
-  }, 300);
+  }, 300); // Wait for favorites widget to close
 };
 
-// Initialize favorites on page load
+// Add this new function to check favorites on page load
 const initializeFavoritesState = function () {
-  const favorites = safeGetFavorites();
+  const favorites =
+    JSON.parse(localStorage.getItem("Favorites_Products")) || [];
   favorites.forEach((item) => {
-    updateFavoriteButton(item.id, true);
+    const favButton = document.querySelector(`#favorite-a${item.id}`);
+    if (favButton) {
+      favButton.style.cursor = "no-drop";
+      favButton.innerHTML = `تمت الإضافة للمفضلة
+        <i class="fa-regular fa-heart favorite" style="display:none"></i>
+        <i class="fa-solid fa-heart favorite active-icon" style="color: #ff6b6b;"></i>`;
+    }
   });
-  DrawFavroites_FromStorage();
 };
 
 // Add new helper function to show notifications
@@ -166,25 +268,30 @@ const showNotification = (message, type = "error") => {
   }, 2000);
 };
 
-// Close favorites widget
-const closeFavoritesWidget = () => {
-  if (favoriteContainer && Overlay) {
-    favoriteContainer.style.display = "none";
-    Overlay.style.display = "none";
+// Initialize favorites
+document.addEventListener("DOMContentLoaded", function () {
+  const stillOnPageBtn = document.querySelector(".still-on-page");
+  if (stillOnPageBtn) {
+    stillOnPageBtn.addEventListener("click", closeFavoritesWidget);
   }
-};
 
-// Event Listeners
-document.addEventListener("DOMContentLoaded", initializeFavoritesState);
-
-window.addEventListener("storage", (e) => {
-  if (e.key === "Favorites_Products") {
-    FavoritesInStorage = safeGetFavorites();
-    initializeFavoritesState();
+  // Close favorites widget when clicking overlay
+  if (Overlay) {
+    Overlay.addEventListener("click", closeFavoritesWidget);
   }
+
+  // Close on escape key
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") {
+      closeFavoritesWidget();
+    }
+  });
+
+  // Rest of your existing DOMContentLoaded code
+  DrawFavroites_FromStorage();
+  if (window.location.pathname.endsWith("favorites.html")) {
+    ForFavotitePage();
+  }
+  trashFavorite();
+  initializeFavoritesState();
 });
-
-// Exports
-window.AddToFavorites = AddToFavorites;
-window.removeFavorite = removeFavorite;
-window.addToCartFromFavorites = addToCartFromFavorites;
