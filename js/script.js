@@ -268,7 +268,7 @@ const drawSecondProduct = function () {
                 <div class="second-product-product">
                     <h2 class="second-product-product-title">${product.name}</h2>
                     <div class="second-product-prices">
-                        <span class="second-product-old-price">249 ريال سعودي</span>
+                        <span class="second-product-old-price">279 ريال سعودي</span>
                         <span class="second-product-price">${product.price} ريال سعودي</span>
                     </div>
                 </div>
@@ -279,8 +279,7 @@ const drawSecondProduct = function () {
     .join("");
 
   secondProductDom.innerHTML =
-    SecondProductsHtml ||
-    '<div class="no-products">No products available</div>';
+    SecondProductsHtml || '<div class="no-products">لا توجد منتجات متاحة</div>';
 };
 
 // Add this function to check favorites state
@@ -311,13 +310,15 @@ window.addEventListener("beforeunload", function () {
   localStorage.setItem("Cart_Products", JSON.stringify(cartProducts));
 });
 
-// Initialize products
+// Initialize products and second products
 window.addEventListener("productsLoaded", DrawHomePageProducts);
+window.addEventListener("secondProductsLoaded", drawSecondProduct);
 
 // Also try to draw products on DOMContentLoaded
 document.addEventListener("DOMContentLoaded", function () {
   if (window.Products) {
     DrawHomePageProducts();
+    drawSecondProduct();
   }
 });
 
