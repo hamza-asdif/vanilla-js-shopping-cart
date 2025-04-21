@@ -1,4 +1,4 @@
-// DOM Elements
+// !!! DOM Elements
 let SidebarUlDiv = document.querySelector(".ul-product-dom");
 let SideBar = document.querySelector(".cart-sidebar");
 let SidebarClose = document.querySelector("#close-sidebar");
@@ -17,13 +17,13 @@ let searchEmptyDom = document.querySelector(".search-empty");
 let Overlay = document.querySelector(".overlay");
 let favoriteWidget = document.querySelector("#favorte-widget");
 
-// Utility Functions
+// !!! Helper function to format prices
 const formatPrice = (price) => {
   const num = Number(price);
   return num % 1 === 0 ? num.toString() : num.toFixed(2);
 };
 
-// Notification System
+// !!! Notification System
 window.showNotification = (message, type = "error") => {
   const existingNotification = document.querySelector(
     ".cart-error-message, .cart-success-message"
@@ -44,7 +44,7 @@ window.showNotification = (message, type = "error") => {
   }, 3000);
 };
 
-// Update DOM elements with error handling
+// !!! Update DOM elements with error handling
 const updateDomElement = (selector, value) => {
   const element = document.querySelector(selector);
   if (element) {
@@ -52,7 +52,7 @@ const updateDomElement = (selector, value) => {
   }
 };
 
-// Storage helper functions
+// !!! Helper to safely get localStorage values
 const safeLocalStorageGet = (key, defaultValue = null) => {
   try {
     const item = localStorage.getItem(key);
@@ -63,6 +63,7 @@ const safeLocalStorageGet = (key, defaultValue = null) => {
   }
 };
 
+// !!! Helper to safely set localStorage values
 const safeLocalStorageSet = (key, value) => {
   try {
     localStorage.setItem(key, JSON.stringify(value));
@@ -74,11 +75,12 @@ const safeLocalStorageSet = (key, value) => {
   }
 };
 
-// Sidebar Animation Management with error handling
+// !!! Sidebar Animation Management with error handling
 const ANIMATION_DURATION = 300;
 let sidebarAnimationTimeout;
 let isAnimating = false;
 
+// !!! Open sidebar
 const openSidebar = function () {
   if (isAnimating || !SideBar) return;
 
@@ -98,6 +100,7 @@ const openSidebar = function () {
   }
 };
 
+// !!! Close sidebar
 const closeSidebar = function () {
   if (isAnimating || !SideBar) return;
 
@@ -117,7 +120,7 @@ const closeSidebar = function () {
   }
 };
 
-// Add this centralized updateCartDisplay function
+// !!! Update cart display
 window.updateCartDisplay = function (cartProducts = []) {
   try {
     const total = cartProducts.reduce(
@@ -147,7 +150,7 @@ window.updateCartDisplay = function (cartProducts = []) {
   }
 };
 
-// Event Listeners
+// !!! Event Listeners
 if (CartHeaderLink) {
   CartHeaderLink.addEventListener("click", function (e) {
     e.preventDefault();
@@ -163,7 +166,7 @@ if (Overlay) {
   Overlay.addEventListener("click", closeSidebar);
 }
 
-// Close sidebar on escape key
+// !!! Close sidebar on escape key
 document.addEventListener("keydown", function (e) {
   if (
     e.key === "Escape" &&
@@ -174,14 +177,14 @@ document.addEventListener("keydown", function (e) {
   }
 });
 
-// Error handling for cart operations
+// !!! Error handling for cart operations
 window.addEventListener("error", function (e) {
   console.error("Cart operation error:", e.error);
-  // Show user-friendly error message
+  // !!! Show user-friendly error message
   showNotification("حدث خطأ. يرجى المحاولة مرة أخرى");
 });
 
-// Mobile Menu Toggle
+// !!! Mobile Menu Toggle
 const initMobileMenu = () => {
   const menuToggle = document.querySelector(".menu-toggle");
   const menuBox = document.querySelector(".menu-box");
@@ -204,7 +207,7 @@ const initMobileMenu = () => {
       document.body.style.overflow = "";
     });
 
-    // Close menu on window resize (if screen becomes larger)
+    // !!! Close menu on window resize if screen becomes larger
     window.addEventListener("resize", () => {
       if (window.innerWidth > 992) {
         menuToggle.classList.remove("active");
@@ -216,5 +219,5 @@ const initMobileMenu = () => {
   }
 };
 
-// Initialize mobile menu
+// !!! Initialize mobile menu on DOMContentLoaded
 document.addEventListener("DOMContentLoaded", initMobileMenu);

@@ -1,27 +1,21 @@
+// !!! Get main product section DOM
 let HomePageDom = document.querySelector(".product-data-section");
 
-// Single source of truth for products data
-// Only define these functions if they don't already exist in the global scope
+// !!! Provide global product/cart/favorite getters if not already defined
 if (typeof getProducts !== 'function') {
   window.getProducts = () => JSON.parse(localStorage.getItem("Products")) || [];
 }
-
 if (typeof getSecondProducts !== 'function') {
-  window.getSecondProducts = () =>
-    JSON.parse(localStorage.getItem("Second_Products")) || [];
+  window.getSecondProducts = () => JSON.parse(localStorage.getItem("Second_Products")) || [];
 }
-
 if (typeof getCartProducts !== 'function') {
-  window.getCartProducts = () =>
-    JSON.parse(localStorage.getItem("Cart_Products")) || [];
+  window.getCartProducts = () => JSON.parse(localStorage.getItem("Cart_Products")) || [];
 }
-
 if (typeof getFavoriteProducts !== 'function') {
-  window.getFavoriteProducts = () =>
-    JSON.parse(localStorage.getItem("Favorites_Products")) || [];
+  window.getFavoriteProducts = () => JSON.parse(localStorage.getItem("Favorites_Products")) || [];
 }
 
-// Add this default second products data
+// !!! Default data for second products
 const defaultSecondProducts = [
   {
     id: 1,
@@ -46,7 +40,7 @@ const defaultSecondProducts = [
   },
 ];
 
-// Initialize second products if they don't exist
+// !!! Initialize second products if not present
 const initializeSecondProducts = () => {
   const existingSecondProducts = localStorage.getItem("Second_Products");
   if (!existingSecondProducts) {
@@ -54,11 +48,10 @@ const initializeSecondProducts = () => {
       "Second_Products",
       JSON.stringify(defaultSecondProducts)
     );
-    console.log("Second products initialized");
   }
 };
 
-// !!!! function to add product to cart
+// !!! Add product to cart, prevent duplicates
 const DontDublicate = function (id) {
   try {
     let cartProducts = getCartProducts();
@@ -84,14 +77,14 @@ const DontDublicate = function (id) {
     }
 
     updateCartDisplay(cartProducts);
-    openSidebar(); // Instead of toggle, explicitly open
+    openSidebar(); 
   } catch (error) {
     console.error("Error adding product to cart:", error);
     showNotification("حدث خطأ في إضافة المنتج للسلة");
   }
 };
 
-// Render cart widget for a specific product
+// !!! Render cart widget for a product
 const renderCartWidget = function (id) {
   const product = getProducts().find((p) => p.id === id);
   if (!product || !SidebarUlDiv) return;
@@ -137,7 +130,7 @@ const renderCartWidget = function (id) {
   SidebarUlDiv.appendChild(temp.firstElementChild);
 };
 
-// Initialize cart contents
+// !!! Initialize cart contents in sidebar
 const initializeCartContents = function () {
   if (!SidebarUlDiv) return;
 
@@ -152,7 +145,7 @@ const initializeCartContents = function () {
   updateCartState(cartProducts);
 };
 
-// Update all cart displays
+// !!! Update all cart displays (header, sidebar, etc)
 const updateCartDisplay = (cartProducts) => {
   const total = cartProducts.reduce(
     (sum, item) => sum + item.price * item.quantity,
@@ -175,7 +168,7 @@ const updateCartDisplay = (cartProducts) => {
   safeLocalStorageSet("Cart_Counter", itemCount);
 };
 
-// Draw products into home page with error handling
+// !!! Draw all products on home page
 const DrawHomePageProducts = function () {
   const homePageDom = document.querySelector(".product-data-section");
   if (!homePageDom) return;
@@ -237,7 +230,7 @@ const DrawHomePageProducts = function () {
   }
 };
 
-// !!!!!! --------- functions to DRAW THE SECOND PRODUCTS WIDGETS ON HOME PAGE
+// !!! Draw second products widget on home page
 const drawSecondProduct = function () {
   if (!window.location.pathname.includes("index.html") && 
       !window.location.pathname.endsWith('/')) return;
@@ -251,10 +244,8 @@ const drawSecondProduct = function () {
   if (!secondProducts || !secondProducts.length) {
     secondProducts = defaultSecondProducts;
     localStorage.setItem("Second_Products", JSON.stringify(secondProducts));
-    console.log("Using default second products");
   }
 
-  console.log("Second products:", secondProducts); // للتشخيص
 
   const SecondProductsHtml = secondProducts
     .map(
@@ -282,7 +273,7 @@ const drawSecondProduct = function () {
     '<div class="no-products">لا توجد منتجات متاحة</div>';
 };
 
-// !!!! functions to get product to move into PRODUCTS PAGE
+// !!! Move product to product page by id
 const CreateProductPageId = function (id) {
   const products = getProducts();
   const product = products.find((item) => item.id == id);
@@ -292,17 +283,19 @@ const CreateProductPageId = function (id) {
   }
 };
 
-// !!!! functions to get product to move into PRODUCTS PAGE
+// !!! Move second product to product page by id
 const CreateSecondProductPageId = function (id) {
   const secondProducts = getSecondProducts();
   const product = secondProducts.find((item) => item.id == id);
   if (product) {
+    // Set Second_Product_Id and clear Product_Id to avoid conflict
     localStorage.setItem("Second_Product_Id", product.id);
+    localStorage.removeItem("Product_Id");
     window.location = "product-page.html";
   }
 };
 
-// Add this function to check favorites state
+// !!! Update favorite buttons state on home page
 const updateFavoritesButtonsState = () => {
   const FavoritesInStorage =
     JSON.parse(localStorage.getItem("Favorites_Products")) || [];
@@ -317,41 +310,40 @@ const updateFavoritesButtonsState = () => {
   });
 };
 
-// Update cart on storage changes
+// !!! Listen for cart storage changes and restore cart state
 window.addEventListener("storage", function (e) {
   if (e.key === "Cart_Products") {
     restoreCartState();
   }
 });
 
-// Ensure cart state is maintained on page refresh
+// !!! Maintain cart state on page refresh
 window.addEventListener("beforeunload", function () {
   const cartProducts = JSON.parse(localStorage.getItem("Cart_Products")) || [];
   localStorage.setItem("Cart_Products", JSON.stringify(cartProducts));
 });
 
-// Initialize products
+// !!! Draw products after loading event
 window.addEventListener("productsLoaded", function() {
   DrawHomePageProducts();
   drawSecondProduct();
-  console.log("Products loaded event triggered");
 });
 
-// Also try to draw products on DOMContentLoaded
+// !!! Draw products on DOMContentLoaded
+
 document.addEventListener("DOMContentLoaded", function () {
-  // تهيئة المنتجات إذا لم تكن موجودة
+
   initializeSecondProducts();
   
-  // محاولة عرض المنتجات
+  
   DrawHomePageProducts();
   drawSecondProduct();
   
-  // استدعاء دالة restoreCartState فقط إذا كانت موجودة
+  
   if (typeof restoreCartState === 'function') {
     restoreCartState();
   } else {
-    console.log("restoreCartState function not available, skipping cart restoration");
-    // تحديث عداد السلة على الأقل
+    // update cart info
     const cartProducts = JSON.parse(localStorage.getItem("Cart_Products")) || [];
     const itemCount = cartProducts.length;
     const HeaderCartCounter = document.querySelector(".cart-counter");
@@ -363,11 +355,8 @@ document.addEventListener("DOMContentLoaded", function () {
   
   updateFavoritesButtonsState();
   
-  console.log("DOM loaded, products initialized");
   
-  // إذا كانت المنتجات موجودة في window، عرضها
   if (window.Products) {
-    console.log("Window products found");
     DrawHomePageProducts();
   }
   
@@ -375,21 +364,17 @@ document.addEventListener("DOMContentLoaded", function () {
   const storedProducts = JSON.parse(localStorage.getItem("Products"));
   const storedSecondProducts = JSON.parse(localStorage.getItem("Second_Products"));
   
-  console.log("Stored products:", storedProducts);
-  console.log("Stored second products:", storedSecondProducts);
+  
 });
 
-// إضافة مستمع للتأكد من تحميل المنتجات الثانية
+// !!! Listen for second products loaded event
 window.addEventListener("secondProductsLoaded", function() {
   drawSecondProduct();
-  console.log("Second products loaded event triggered");
 });
 
-// إضافة مستمع لتحديث المفضلة
+// !!! Listen for favorites update event
 window.addEventListener("favoritesUpdated", function() {
   updateFavoritesButtonsState();
-  console.log("Favorites updated event triggered");
 });
 
 const storedProducts = JSON.parse(localStorage.getItem("Products"));
-console.log(storedProducts); // تحقق من وجود المنتجات

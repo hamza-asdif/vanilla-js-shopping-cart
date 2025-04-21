@@ -1,9 +1,9 @@
-/**
- * Products, Cart, and Favorites Data Management
- * Simplified version for better reliability
+/****
+ ** Products, Cart, and Favorites Data Management
+ * *Simplified version for better reliability
  */
 
-// Default product data
+// !!! Default product data
 const defaultProducts = [
   {
     id: 1,
@@ -63,65 +63,64 @@ const defaultProducts = [
   },
 ];
 
-// Global storage keys
+// !!! Storage key constants
 const STORAGE_KEYS = {
   PRODUCTS: "Products",
   CART: "Cart_Products",
   FAVORITES: "Favorites_Products",
 };
 
-// Helper functions
-const getFromStorage = (key, defaultValue) => {
+// !!! Helper to get data from localStorage
+const getFromStorage = (key, defaultValue = null) => {
   try {
-    const data = localStorage.getItem(key);
-    return data ? JSON.parse(data) : defaultValue;
+    const item = localStorage.getItem(key);
+    return item ? JSON.parse(item) : defaultValue;
   } catch (error) {
-    console.error(`Error reading from storage (${key}):`, error);
+    console.error("Error reading from storage:", error);
     return defaultValue;
   }
 };
 
-const saveToStorage = (key, data) => {
+// !!! Helper to save data to localStorage
+const saveToStorage = (key, value) => {
   try {
-    localStorage.setItem(key, JSON.stringify(data));
+    localStorage.setItem(key, JSON.stringify(value));
   } catch (error) {
-    console.error(`Error saving to storage (${key}):`, error);
+    console.error("Error saving to storage:", error);
   }
 };
 
-// Initialize data
+// !!! Initialize data
 const initializeData = () => {
-  // Load or set default products
+  // !!! Load or set default products
   const products = getFromStorage(STORAGE_KEYS.PRODUCTS, defaultProducts);
   saveToStorage(STORAGE_KEYS.PRODUCTS, products);
   
-  // Initialize empty cart and favorites
+  // !!! Initialize empty cart and favorites
   const cart = getFromStorage(STORAGE_KEYS.CART, []);
   saveToStorage(STORAGE_KEYS.CART, cart);
   
   const favorites = getFromStorage(STORAGE_KEYS.FAVORITES, []);
   saveToStorage(STORAGE_KEYS.FAVORITES, favorites);
   
-  // Make data available globally
+  // !!! Make data available globally
   window.Products = products;
   
-  // Notify that data is loaded
+  // !!! Notify that data is loaded
   window.dispatchEvent(new Event('productsLoaded'));
   window.dispatchEvent(new Event('cartUpdated'));
   window.dispatchEvent(new Event('favoritesUpdated'));
 };
 
-// Cart management
+// !!! Cart management
 const addToCart = (product) => {
   const cart = getFromStorage(STORAGE_KEYS.CART, []);
   const existing = cart.find(item => item.id === product.id);
-  
   if (existing) {
     existing.quantity += 1;
   } else {
     cart.push({ ...product, quantity: 1 });
   }
-  
   saveToStorage(STORAGE_KEYS.CART, cart);
   window.dispatchEvent(new Event('cartUpdated'));
 };
@@ -129,7 +128,6 @@ const addToCart = (product) => {
 const removeFromCart = (productId) => {
   const cart = getFromStorage(STORAGE_KEYS.CART, []);
   const updatedCart = cart.filter(item => item.id !== productId);
-  
   saveToStorage(STORAGE_KEYS.CART, updatedCart);
   window.dispatchEvent(new Event('cartUpdated'));
 };
@@ -137,7 +135,6 @@ const removeFromCart = (productId) => {
 const updateCartQuantity = (productId, quantity) => {
   const cart = getFromStorage(STORAGE_KEYS.CART, []);
   const item = cart.find(item => item.id === productId);
-  
   if (item) {
     item.quantity = quantity;
     saveToStorage(STORAGE_KEYS.CART, cart);
@@ -145,17 +142,15 @@ const updateCartQuantity = (productId, quantity) => {
   }
 };
 
-// Favorites management
+// !!! Favorites management
 const toggleFavorite = (product) => {
   const favorites = getFromStorage(STORAGE_KEYS.FAVORITES, []);
   const index = favorites.findIndex(item => item.id === product.id);
-  
   if (index >= 0) {
     favorites.splice(index, 1);
   } else {
     favorites.push(product);
   }
-  
   saveToStorage(STORAGE_KEYS.FAVORITES, favorites);
   window.dispatchEvent(new Event('favoritesUpdated'));
 };
@@ -165,12 +160,12 @@ const isFavorite = (productId) => {
   return favorites.some(item => item.id === productId);
 };
 
-// Export functions for global access
+// !!! Export functions for global access
 window.addToCart = addToCart;
 window.removeFromCart = removeFromCart;
 window.updateCartQuantity = updateCartQuantity;
 window.toggleFavorite = toggleFavorite;
 window.isFavorite = isFavorite;
 
-// Initialize data when the script loads
+// !!! Initialize data when the script loads
 initializeData();

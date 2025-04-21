@@ -1,25 +1,19 @@
-// !!! functions to draw Products From Cart into Product Page
+// !!! Draw product details on product page
 
-// Get the product page DOM element
 const ProductPageDom = document.querySelector(".product-ui");
 
 const ProductPageUI = function () {
-  // Get the product ID from localStorage
+  // !!! Get product ID from localStorage
   let ProductId_Storage = localStorage.getItem("Product_Id") || "";
-  console.log("Product ID from storage:", ProductId_Storage);
-  
-  // Get products using the getProducts function from mydata.js
+
+  // !!! Get products list
   const products = window.getProducts ? window.getProducts() : 
                   (JSON.parse(localStorage.getItem("Products")) || []);
-  
-  console.log("Products available:", products.length);
-  
-  // Find the product with the matching ID
+
+  // !!! Find product by ID
   const product = products.find(p => p.id == ProductId_Storage);
-  
+
   if (product) {
-    console.log("Found product:", product.name);
-    
     let Prod = `<div class="product__gallery">
                   <div class="product__gallery-main">
                       <img src="${product.Image}" alt="${product.name}" class="product__gallery-image">
@@ -65,14 +59,14 @@ const ProductPageUI = function () {
     if (ProductPageDom) {
       ProductPageDom.innerHTML = Prod;
       
-      // Add event listeners for thumbnail images
+      // !!! Add event listeners for thumbnail images
       document.querySelectorAll('.product__gallery-thumb').forEach(img => {
         img.addEventListener('click', function() {
           document.querySelector('.product__gallery-image').src = this.src;
         });
       });
       
-      // Update fake visitor counter randomly
+      // !!! Update fake visitor counter randomly
       setInterval(() => {
         const visitorCounter = document.querySelector('.product__stats-number');
         if (visitorCounter) {
@@ -97,24 +91,39 @@ const ProductPageUI = function () {
   }
 };
 
-// Wait for products to be loaded
-window.addEventListener("productsLoaded", ProductPageUI);
-
-// Also run on page load in case products are already loaded
+// !!! Initialize product page on DOMContentLoaded
 document.addEventListener("DOMContentLoaded", function() {
-  console.log("DOM loaded, initializing product page");
-  setTimeout(ProductPageUI, 100); // Small delay to ensure everything is loaded
+  setTimeout(function() {
+    // Use the same logic as products section: check which ID is set, then load the correct product
+    let ProductId_Storage = localStorage.getItem("Product_Id") || "";
+    let SecondProductId_Storage = localStorage.getItem("Second_Product_Id") || "";
+    if (ProductId_Storage) {
+      ProductPageUI();
+    } else if (SecondProductId_Storage) {
+      SecondProductPageUI();
+    } else {
+      // Show not found if neither is set
+      if (ProductPageDom) {
+        ProductPageDom.innerHTML = `<div class="product-not-found">
+          <h2>المنتج غير موجود</h2>
+          <p>عذراً، لم يتم العثور على المنتج المطلوب</p>
+          <a href="index.html" class="back-to-shop">العودة للتسوق</a>
+        </div>`;
+      }
+    }
+  }, 100); // Small delay to ensure everything is loaded
 });
 
-// Handle second products if needed
+// !!! Handle second products if needed
 const SecondProductPageUI = function () {
+  // !!! Get second product ID from localStorage
   let secondProductId_Storage = localStorage.getItem("Second_Product_Id") || "";
   
-  // Get second products using the getSecondProducts function from mydata.js
+  // !!! Get second products list
   const secondProducts = window.getSecondProducts ? window.getSecondProducts() :
                         (JSON.parse(localStorage.getItem("Second_Products")) || []);
   
-  // Find the product with the matching ID
+  // !!! Find second product by ID
   const product = secondProducts.find(p => p.id == secondProductId_Storage);
   
   if (product && ProductPageDom) {
@@ -162,14 +171,14 @@ const SecondProductPageUI = function () {
 
     ProductPageDom.innerHTML = Prod;
     
-    // Add event listeners for thumbnail images
+    // !!! Add event listeners for thumbnail images
     document.querySelectorAll('.product__gallery-thumb').forEach(img => {
       img.addEventListener('click', function() {
         document.querySelector('.product__gallery-image').src = this.src;
       });
     });
     
-    // Update fake visitor counter randomly
+    // !!! Update fake visitor counter randomly
     setInterval(() => {
       const visitorCounter = document.querySelector('.product__stats-number');
       if (visitorCounter) {
@@ -180,5 +189,5 @@ const SecondProductPageUI = function () {
   }
 };
 
-// Also check for second products
+// !!! Handle second products loaded event
 window.addEventListener("secondProductsLoaded", SecondProductPageUI);
