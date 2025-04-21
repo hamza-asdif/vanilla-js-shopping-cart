@@ -30,15 +30,28 @@ const favoritesHomePage_Popup = function (id) {
       return;
     }
 
-    // Add to favorites
-    DrawFavoritesProduct(id);
-    
-    // Update UI
-    updateFavoriteButton(id, true);
-    
-    // Show success notification
-    if (window.showNotification) {
-      window.showNotification("تمت إضافة المنتج إلى المفضلة", "success");
+    // Use the global toggleFavorite function from mydata.js
+    if (window.toggleFavorite) {
+      window.toggleFavorite(product);
+      
+      // Refresh the local favorites array
+      FavoritesInStorage = JSON.parse(localStorage.getItem("Favorites_Products")) || [];
+      
+      // Update UI in home page
+      updateFavoriteButton(id, true);
+      
+      // Update favorites widget if on home page
+      if (window.location.pathname.endsWith("index.html") || 
+          window.location.pathname.endsWith("/")) {
+        updateFavoritesWidget();
+      }
+      
+      // Show success notification
+      if (window.showNotification) {
+        window.showNotification("تمت إضافة المنتج إلى المفضلة", "success");
+      }
+    } else {
+      console.error("toggleFavorite function not found");
     }
   } catch (error) {
     console.error("Error adding product to favorites:", error);
@@ -48,32 +61,30 @@ const favoritesHomePage_Popup = function (id) {
   }
 };
 
-// !!!! functions to DRAW FAVORITES PRODUCT IN WIDGET - HOME PAGE ------------
-const DrawFavoritesProduct = function (id) {
-  if (
-    !window.location.pathname.endsWith("index.html") &&
-    !window.location.pathname.endsWith("search.html") &&
-    !window.location.pathname.endsWith("/")
-  )
-    return;
-
-  // Get favoriteWidget from the global scope
+// New function to update the favorites widget
+const updateFavoritesWidget = function() {
   const favoriteWidget = document.querySelector("#favorte-widget");
   if (!favoriteWidget) return;
-
-  // Use getProducts function from script.js
-  const product = getProducts().find((item) => item.id == id);
-  if (!product) return;
-
-  // First, clear any "no favorites" message
-  if (favoriteWidget.querySelector(".favorites-empty")) {
-    favoriteWidget.innerHTML = "";
+  
+  // Get the latest favorites
+  FavoritesInStorage = JSON.parse(localStorage.getItem("Favorites_Products")) || [];
+  
+  if (FavoritesInStorage.length === 0) {
+    favoriteWidget.innerHTML = `
+      <div class="favorites-empty">
+        <i class="fa-regular fa-heart"></i>
+        <p>لا توجد منتجات في المفضلة</p>
+      </div>
+    `;
+    return;
   }
-
-  // Check if product is already in favorites
-  if (FavoritesInStorage.some((item) => item.id === id)) return;
-
-  const CurrentProduct = `<div class="favorite-item" id="favorites-product-${product.id}">
+  
+  // Clear the widget
+  favoriteWidget.innerHTML = "";
+  
+  // Add all favorites to the widget
+  FavoritesInStorage.forEach(product => {
+    const favoriteItem = `<div class="favorite-item" id="favorites-product-${product.id}">
         <div class="fav-img-box">
             <img src="${product.Image}" alt="" onclick="CreateProductPageId(${product.id})">
         </div>
@@ -90,10 +101,65 @@ const DrawFavoritesProduct = function (id) {
             </button>
         </div>
     </div>`;
+    
+    favoriteWidget.insertAdjacentHTML("beforeend", favoriteItem);
+  });
+};
 
-  favoriteWidget.insertAdjacentHTML("beforeend", CurrentProduct);
-  FavoritesProductsToStorage(product);
-  updateFavoriteButton(id, true);
+// Function to remove a product from favorites
+const trashFavorite = function (id) {
+  try {
+    // Get the product to remove
+    const product = FavoritesInStorage.find(item => item.id === id);
+    if (!product) {
+      console.error("Product not found in favorites:", id);
+      return;
+    }
+    
+    // Use the global toggleFavorite function to remove from favorites
+    if (window.toggleFavorite) {
+      window.toggleFavorite(product);
+      
+      // Refresh local favorites array
+      FavoritesInStorage = JSON.parse(localStorage.getItem("Favorites_Products")) || [];
+      
+      // Remove from UI
+      const favoriteItem = document.getElementById(`favorites-product-${id}`);
+      if (favoriteItem) {
+        favoriteItem.remove();
+      }
+      
+      // Update favorite button if on home page
+      updateFavoriteButton(id, false);
+      
+      // Check if we need to show "no favorites" message
+      if (FavoritesInStorage.length === 0) {
+        const favoriteWidget = document.querySelector("#favorte-widget");
+        if (favoriteWidget) {
+          favoriteWidget.innerHTML = `
+            <div class="favorites-empty">
+              <i class="fa-regular fa-heart"></i>
+              <p>لا توجد منتجات في المفضلة</p>
+            </div>
+          `;
+        }
+        
+        // Update favorites page if we're on it
+        if (window.location.pathname.includes("favorites.html")) {
+          DrawFavoritesPage();
+        }
+      }
+      
+      // Show notification
+      if (window.showNotification) {
+        window.showNotification("تمت إزالة المنتج من المفضلة", "success");
+      }
+    } else {
+      console.error("toggleFavorite function not found");
+    }
+  } catch (error) {
+    console.error("Error removing product from favorites:", error);
+  }
 };
 
 const updateFavoriteButton = function (id, isFavorite) {
@@ -198,32 +264,7 @@ const FavoritesProductsToStorage = function (product) {
 };
 
 // !!!! functions to REMOVE FAVORITES PRODUCT FROM LOCAL STORAGE ------------
-const trashFavorite = function (id) {
-  FavoritesInStorage = FavoritesInStorage.filter((item) => item.id !== id);
-  localStorage.setItem("Favorites_Products", JSON.stringify(FavoritesInStorage));
-  
-  // Remove from favorites page if we're on it
-  const favoriteProduct = document.querySelector(`#favorite-product-${id}`);
-  if (favoriteProduct) {
-    favoriteProduct.remove();
-    
-    // Check if there are no more favorites
-    if (FavoritesInStorage.length === 0) {
-      DrawFavoritesPage();
-    }
-  }
-  
-  // Remove from favorites widget if we're on home page
-  const favoritesWidget = document.querySelector(`#favorites-product-${id}`);
-  if (favoritesWidget) {
-    favoritesWidget.remove();
-  }
-  
-  // Update favorite button state
-  updateFavoriteButton(id, false);
-  
-  console.log("Product removed from favorites:", id);
-};
+// Removed this function as it's replaced by the new trashFavorite function
 
 // !!!! functions to ADD PRODUCT TO CART FROM FAVORITES ------------
 const addToCartFromFavorites = function (id) {
