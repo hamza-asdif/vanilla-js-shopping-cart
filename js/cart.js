@@ -415,6 +415,15 @@ document.addEventListener("DOMContentLoaded", function() {
   console.log("DOM loaded for cart page");
   console.log("Current path:", window.location.pathname);
   
+  // Check if we're on the cart page
+  const currentPage = window.location.pathname;
+  const isCartPage = currentPage === '/' || currentPage === '/cart' || currentPage.includes('/cart.html');
+  
+  if (!isCartPage) {
+    console.log("Not on cart page, path:", currentPage);
+    return;
+  }
+  
   // Draw cart page
   drawCartPage();
   
@@ -428,5 +437,15 @@ document.addEventListener("DOMContentLoaded", function() {
 // Also check when window loads (in case DOMContentLoaded was missed)
 window.addEventListener("load", function() {
   console.log("Window loaded for cart page");
+  
+  // Check if we're on the cart page
+  const currentPage = window.location.pathname;
+  const isCartPage = currentPage === '/' || currentPage === '/cart' || currentPage.includes('/cart.html');
+  
+  if (!isCartPage) {
+    console.log("Not on cart page, path:", currentPage);
+    return;
+  }
+  
   drawCartPage();
 });

@@ -182,8 +182,11 @@ const updateFavoriteButton = function (id, isFavorite) {
 // !!!! functions to DRAW FAVORITES PRODUCT IN FAVORITES PAGE ------------
 const DrawFavoritesPage = function () {
   // Check if we're on the favorites page
-  if (!window.location.pathname.includes("favorites.html")) {
-    console.log("Not on favorites page, path:", window.location.pathname);
+  const currentPage = window.location.pathname;
+  const isFavoritesPage = currentPage === '/' || currentPage === '/favorites' || currentPage.includes('/favorites.html');
+  
+  if (!isFavoritesPage) {
+    console.log("Not on favorites page, path:", currentPage);
     return;
   }
   
