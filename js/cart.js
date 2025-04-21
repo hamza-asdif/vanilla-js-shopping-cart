@@ -60,8 +60,16 @@ const updateCartCounter = function () {
 const updateCartState = (cartProducts) => {
   try {
     const total = calculateCartTotal(cartProducts);
+    
+    // Update cart page totals
+    updateDomElementCart("#products-total", `${formatPrice(total)} ريال سعودي`);
+    updateDomElementCart("#final-total", `${formatPrice(total)} ريال سعودي`);
+    
+    // Update header and sidebar totals
     updateDomElementCart(".cart-span", `${formatPrice(total)} ريال سعودي`);
     updateDomElementCart("#cart-sum-span", `${formatPrice(total)} ريال سعودي`);
+    
+    // Update cart counter
     updateCartCounter();
     
     try {
@@ -81,7 +89,8 @@ const drawCartPage = () => {
   
   console.log("Drawing cart page");
   
-  const cartContainer = document.querySelector(".cart-container");
+  // Update the selector to match the actual HTML structure
+  const cartContainer = document.querySelector(".cart-table");
   if (!cartContainer) {
     console.error("Cart container not found");
     return;
@@ -91,41 +100,48 @@ const drawCartPage = () => {
   console.log("Cart products:", cartProducts);
   
   if (!cartProducts.length) {
-    cartContainer.innerHTML = `
-      <div class="empty-cart">
-        <i class="fa-solid fa-shopping-cart"></i>
-        <h2>سلة التسوق فارغة</h2>
-        <p>قم بإضافة منتجات إلى سلة التسوق لتظهر هنا</p>
-        <a href="index.html" class="back-to-shop">العودة للتسوق</a>
-      </div>
-    `;
-    updateDomElementCart(".cart-total-price", "0.00 ريال سعودي");
+    // Update the parent container to show empty cart message
+    const cartParent = document.querySelector(".cart");
+    if (cartParent) {
+      cartParent.innerHTML = `
+        <div class="empty-cart">
+          <i class="fa-solid fa-shopping-cart"></i>
+          <h2>سلة التسوق فارغة</h2>
+          <p>قم بإضافة منتجات إلى سلة التسوق لتظهر هنا</p>
+          <a href="index.html" class="back-to-shop">العودة للتسوق</a>
+        </div>
+      `;
+    }
+    updateDomElementCart("#products-total", "0 ريال سعودي");
+    updateDomElementCart("#final-total", "0 ريال سعودي");
     return;
   }
   
   const cartItemsHTML = cartProducts.map((product, index) => `
-    <div class="cart-item" id="cart-item-${product.id}">
-      <div class="cart-item-image">
+    <div class="cart-table-data" id="cart-item-${product.id}">
+      <div class="cart-data-img-box">
         <img src="${product.Image}" alt="${product.name}" onclick="CreateProductPageId(${product.id})">
       </div>
-      <div class="cart-item-details">
+      <div class="cart-data-details">
         <h3 class="cart-item-title" onclick="CreateProductPageId(${product.id})">${product.name}</h3>
-        <div class="cart-item-price">${product.price} ريال سعودي</div>
-        <div class="cart-item-controls">
-          <div class="quantity-control">
-            <button class="quantity-decrease" onclick="decreaseQuantity(${product.id})">-</button>
-            <input type="number" min="1" max="99" value="${product.quantity}" 
-              onchange="updateItemQuantity(${product.id}, this.value)" 
-              class="quantity-input" id="quantity-input-${product.id}">
-            <button class="quantity-increase" onclick="increaseQuantity(${product.id})">+</button>
-          </div>
-          <button class="remove-item" onclick="removeCartItem(${product.id})">
-            <i class="fas fa-trash"></i> حذف
-          </button>
+        <div class="cart-item-price">${formatPrice(product.price)} ريال سعودي</div>
+      </div>
+      <div class="cart-data-quantity">
+        <div class="quantity-control">
+          <button class="quantity-decrease" onclick="decreaseQuantity(${product.id})">-</button>
+          <input type="number" min="1" max="99" value="${product.quantity}" 
+            onchange="updateItemQuantity(${product.id}, this.value)" 
+            class="quantity-input" id="quantity-input-${product.id}">
+          <button class="quantity-increase" onclick="increaseQuantity(${product.id})">+</button>
         </div>
       </div>
-      <div class="cart-item-subtotal">
+      <div class="cart-data-price">
         <span>${formatPrice(product.price * product.quantity)} ريال سعودي</span>
+      </div>
+      <div class="cart-data-trash">
+        <button class="remove-item" onclick="removeCartItem(${product.id})">
+          <i class="fas fa-trash"></i>
+        </button>
       </div>
     </div>
   `).join("");
@@ -134,7 +150,8 @@ const drawCartPage = () => {
   
   // Update cart total
   const total = calculateCartTotal(cartProducts);
-  updateDomElementCart(".cart-total-price", `${formatPrice(total)} ريال سعودي`);
+  updateDomElementCart("#products-total", `${formatPrice(total)} ريال سعودي`);
+  updateDomElementCart("#final-total", `${formatPrice(total)} ريال سعودي`);
 };
 
 // Cart item quantity management
@@ -151,14 +168,28 @@ const increaseQuantity = (id) => {
       console.error("Error updating cart products:", error);
     }
     
-    // Update UI
+    // Update UI in cart page
     const quantityInput = document.querySelector(`#quantity-input-${id}`);
     if (quantityInput) quantityInput.value = product.quantity;
     
-    const subtotal = document.querySelector(`#cart-item-${id} .cart-item-subtotal span`);
+    const subtotal = document.querySelector(`#cart-item-${id} .cart-data-price span`);
     if (subtotal) subtotal.textContent = `${formatPrice(product.price * product.quantity)} ريال سعودي`;
     
-    updateCartState(cartProducts);
+    // Update cart totals on cart page
+    const total = calculateCartTotal(cartProducts);
+    updateDomElementCart("#products-total", `${formatPrice(total)} ريال سعودي`);
+    updateDomElementCart("#final-total", `${formatPrice(total)} ريال سعودي`);
+    
+    // Update sidebar quantity if it exists
+    const sidebarQuantity = document.querySelector(`#quantity-${id}`);
+    if (sidebarQuantity) sidebarQuantity.innerHTML = product.quantity;
+    
+    // Update all cart displays using the global function if available
+    if (typeof window.updateCartDisplay === 'function') {
+      window.updateCartDisplay(cartProducts);
+    } else {
+      updateCartState(cartProducts);
+    }
   }
 };
 
@@ -175,14 +206,28 @@ const decreaseQuantity = (id) => {
       console.error("Error updating cart products:", error);
     }
     
-    // Update UI
+    // Update UI in cart page
     const quantityInput = document.querySelector(`#quantity-input-${id}`);
     if (quantityInput) quantityInput.value = product.quantity;
     
-    const subtotal = document.querySelector(`#cart-item-${id} .cart-item-subtotal span`);
+    const subtotal = document.querySelector(`#cart-item-${id} .cart-data-price span`);
     if (subtotal) subtotal.textContent = `${formatPrice(product.price * product.quantity)} ريال سعودي`;
     
-    updateCartState(cartProducts);
+    // Update cart totals on cart page
+    const total = calculateCartTotal(cartProducts);
+    updateDomElementCart("#products-total", `${formatPrice(total)} ريال سعودي`);
+    updateDomElementCart("#final-total", `${formatPrice(total)} ريال سعودي`);
+    
+    // Update sidebar quantity if it exists
+    const sidebarQuantity = document.querySelector(`#quantity-${id}`);
+    if (sidebarQuantity) sidebarQuantity.innerHTML = product.quantity;
+    
+    // Update all cart displays using the global function if available
+    if (typeof window.updateCartDisplay === 'function') {
+      window.updateCartDisplay(cartProducts);
+    } else {
+      updateCartState(cartProducts);
+    }
   }
 };
 
@@ -190,12 +235,7 @@ const updateItemQuantity = (id, value) => {
   const quantity = parseInt(value);
   
   if (!validateQuantity(quantity)) {
-    // Reset to valid value
-    const cartProducts = getCartProducts();
-    const product = cartProducts.find(p => p.id === id);
-    
-    const quantityInput = document.querySelector(`#quantity-input-${id}`);
-    if (quantityInput && product) quantityInput.value = product.quantity;
+    console.error("Invalid quantity:", quantity);
     return;
   }
   
@@ -203,6 +243,7 @@ const updateItemQuantity = (id, value) => {
   const product = cartProducts.find(p => p.id === id);
   
   if (product) {
+    const oldQuantity = product.quantity;
     product.quantity = quantity;
     
     try {
@@ -211,33 +252,79 @@ const updateItemQuantity = (id, value) => {
       console.error("Error updating cart products:", error);
     }
     
-    const subtotal = document.querySelector(`#cart-item-${id} .cart-item-subtotal span`);
+    // Update UI in cart page
+    const subtotal = document.querySelector(`#cart-item-${id} .cart-data-price span`);
     if (subtotal) subtotal.textContent = `${formatPrice(product.price * product.quantity)} ريال سعودي`;
     
-    updateCartState(cartProducts);
+    // Update cart totals on cart page
+    const total = calculateCartTotal(cartProducts);
+    updateDomElementCart("#products-total", `${formatPrice(total)} ريال سعودي`);
+    updateDomElementCart("#final-total", `${formatPrice(total)} ريال سعودي`);
+    
+    // Update sidebar quantity if it exists
+    const sidebarQuantity = document.querySelector(`#quantity-${id}`);
+    if (sidebarQuantity) sidebarQuantity.innerHTML = product.quantity;
+    
+    // Update all cart displays using the global function if available
+    if (typeof window.updateCartDisplay === 'function') {
+      window.updateCartDisplay(cartProducts);
+    } else {
+      updateCartState(cartProducts);
+    }
+    
+    console.log(`Quantity updated from ${oldQuantity} to ${quantity} for product ${id}`);
   }
 };
 
 const removeCartItem = (id) => {
-  const cartProducts = getCartProducts();
-  const updatedCart = cartProducts.filter(p => p.id !== id);
+  let cartProducts = getCartProducts();
+  
+  // Find the product to be removed
+  const productToRemove = cartProducts.find(p => p.id === id);
+  if (!productToRemove) return;
+  
+  // Remove from cart products array
+  cartProducts = cartProducts.filter(p => p.id !== id);
   
   try {
-    localStorage.setItem("Cart_Products", JSON.stringify(updatedCart));
+    localStorage.setItem("Cart_Products", JSON.stringify(cartProducts));
   } catch (error) {
     console.error("Error updating cart products:", error);
   }
   
-  // Remove from UI
+  // Add animation class before removing
   const cartItem = document.querySelector(`#cart-item-${id}`);
-  if (cartItem) cartItem.remove();
-  
-  // Check if cart is empty
-  if (updatedCart.length === 0) {
-    drawCartPage();
+  if (cartItem) {
+    cartItem.classList.add('removing');
+    setTimeout(() => {
+      cartItem.remove();
+      
+      // If cart is empty, redraw the cart page
+      if (cartProducts.length === 0) {
+        drawCartPage();
+      }
+    }, 300);
   }
   
-  updateCartState(updatedCart);
+  // Remove from sidebar if it exists
+  const sidebarItem = document.querySelector(`#sidebar-product-container-${id}`);
+  if (sidebarItem) {
+    sidebarItem.remove();
+  }
+  
+  // Update cart totals on cart page
+  const total = calculateCartTotal(cartProducts);
+  updateDomElementCart("#products-total", `${formatPrice(total)} ريال سعودي`);
+  updateDomElementCart("#final-total", `${formatPrice(total)} ريال سعودي`);
+  
+  // Update all cart displays using the global function if available
+  if (typeof window.updateCartDisplay === 'function') {
+    window.updateCartDisplay(cartProducts);
+  } else {
+    updateCartState(cartProducts);
+  }
+  
+  console.log(`Product ${id} removed from cart`);
 };
 
 // Function to remove item from cart
@@ -325,11 +412,21 @@ const restoreCartState = function () {
 
 // Initialize cart page
 document.addEventListener("DOMContentLoaded", function() {
-  if (typeof drawCartPage === 'function') {
-    drawCartPage();
-  }
-  if (typeof updateCartCounter === 'function') {
-    updateCartCounter();
-  }
-  console.log("Cart page initialized");
+  console.log("DOM loaded for cart page");
+  console.log("Current path:", window.location.pathname);
+  
+  // Draw cart page
+  drawCartPage();
+  
+  // Update cart totals
+  const cartProducts = getCartProducts();
+  const total = calculateCartTotal(cartProducts);
+  updateDomElementCart("#products-total", `${formatPrice(total)} ريال سعودي`);
+  updateDomElementCart("#final-total", `${formatPrice(total)} ريال سعودي`);
+});
+
+// Also check when window loads (in case DOMContentLoaded was missed)
+window.addEventListener("load", function() {
+  console.log("Window loaded for cart page");
+  drawCartPage();
 });

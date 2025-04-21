@@ -88,12 +88,12 @@ const MySecondProducts = [
 ];
 
 // Cache keys and duration
-const CACHE_DURATION = 1000 * 60 * 60; // 1 hour
+const CACHE_DURATION = 1000 * 60 * 60; 
 const CACHE_KEYS = {
   PRODUCTS: "Products",
   SECOND_PRODUCTS: "Second_Products",
   CART: "Cart_Products",
-  FAVORITES: "Favorites_Products", // تصحيح اسم المفتاح
+  FAVORITES: "Favorites_Products",
   CACHE_TIMESTAMP: "products_cache_timestamp",
 };
 

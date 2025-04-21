@@ -1,10 +1,52 @@
 // DOM Elements
 let CartContainer = document.querySelector(".cart");
-let favoriteContainer = document.querySelector(".favorites-container");
+let favoriteContainer = document.querySelector(".favorites-content");
 
 // Using the getProducts and getSecondProducts functions from script.js
 // FavoritesInStorage is still needed locally
 let FavoritesInStorage = JSON.parse(localStorage.getItem("Favorites_Products")) || [];
+
+// Debug log to check what's in favorites storage
+console.log("Initial Favorites in storage:", FavoritesInStorage);
+
+// Function to handle adding products to favorites from home page
+const favoritesHomePage_Popup = function (id) {
+  try {
+    // Get product data
+    const product = getProducts().find(item => item.id == id);
+    if (!product) {
+      console.error("Product not found:", id);
+      return;
+    }
+
+    // Check if product is already in favorites
+    const isAlreadyInFavorites = FavoritesInStorage.some(item => item.id === id);
+    
+    if (isAlreadyInFavorites) {
+      // If already in favorites, show notification
+      if (window.showNotification) {
+        window.showNotification("هذا المنتج موجود بالفعل في المفضلة", "error");
+      }
+      return;
+    }
+
+    // Add to favorites
+    DrawFavoritesProduct(id);
+    
+    // Update UI
+    updateFavoriteButton(id, true);
+    
+    // Show success notification
+    if (window.showNotification) {
+      window.showNotification("تمت إضافة المنتج إلى المفضلة", "success");
+    }
+  } catch (error) {
+    console.error("Error adding product to favorites:", error);
+    if (window.showNotification) {
+      window.showNotification("حدث خطأ أثناء إضافة المنتج إلى المفضلة", "error");
+    }
+  }
+};
 
 // !!!! functions to DRAW FAVORITES PRODUCT IN WIDGET - HOME PAGE ------------
 const DrawFavoritesProduct = function (id) {
@@ -33,10 +75,10 @@ const DrawFavoritesProduct = function (id) {
 
   const CurrentProduct = `<div class="favorite-item" id="favorites-product-${product.id}">
         <div class="fav-img-box">
-            <img src="${product.Image}" alt="" onclick="driveProducts(${product.id})">
+            <img src="${product.Image}" alt="" onclick="CreateProductPageId(${product.id})">
         </div>
         <div class="fav-details">
-            <h4 class="fav-title" onclick="driveProducts(${product.id})">${product.name}</h4>
+            <h4 class="fav-title" onclick="CreateProductPageId(${product.id})">${product.name}</h4>
             <div class="fav-price">${product.price} ريال سعودي</div>
         </div>
         <div class="fav-actions">
@@ -73,15 +115,26 @@ const updateFavoriteButton = function (id, isFavorite) {
 
 // !!!! functions to DRAW FAVORITES PRODUCT IN FAVORITES PAGE ------------
 const DrawFavoritesPage = function () {
-  if (!window.location.pathname.includes("favorites.html")) return;
+  // Check if we're on the favorites page
+  if (!window.location.pathname.includes("favorites.html")) {
+    console.log("Not on favorites page, path:", window.location.pathname);
+    return;
+  }
   
   console.log("Drawing favorites page");
   console.log("Favorites in storage:", FavoritesInStorage);
 
+  // Re-fetch the container in case it wasn't available when the script loaded
+  favoriteContainer = document.querySelector(".favorites-content");
+  
   if (!favoriteContainer) {
     console.error("Favorites container not found");
     return;
   }
+
+  // Re-fetch favorites from localStorage to ensure we have the latest data
+  FavoritesInStorage = JSON.parse(localStorage.getItem("Favorites_Products")) || [];
+  console.log("Updated favorites from localStorage:", FavoritesInStorage);
 
   if (!FavoritesInStorage.length) {
     favoriteContainer.innerHTML = `
@@ -99,10 +152,10 @@ const DrawFavoritesPage = function () {
     (product) => `
     <div class="favorite-product" id="favorite-product-${product.id}">
       <div class="favorite-img-box">
-        <img src="${product.Image}" alt="${product.name}" onclick="driveProducts(${product.id})">
+        <img src="${product.Image}" alt="${product.name}" onclick="CreateProductPageId(${product.id})">
       </div>
       <div class="favorite-info">
-        <h3 class="favorite-title" onclick="driveProducts(${product.id})">${product.name}</h3>
+        <h3 class="favorite-title" onclick="CreateProductPageId(${product.id})">${product.name}</h3>
         <span class="favorite-price">${product.price} ريال سعودي</span>
         <div class="favorite-actions">
           <button class="add-to-cart-btn" onclick="addToCartFromFavorites(${product.id})">
@@ -118,13 +171,30 @@ const DrawFavoritesPage = function () {
   ).join("");
 
   favoriteContainer.innerHTML = favoritesHTML;
+  console.log("Favorites HTML generated and inserted into container");
 };
 
 // !!!! functions to STORE FAVORITES PRODUCT IN LOCAL STORAGE ------------
 const FavoritesProductsToStorage = function (product) {
-  FavoritesInStorage.push(product);
+  // Check if product already exists in favorites
+  const exists = FavoritesInStorage.some(item => item.id === product.id);
+  if (exists) {
+    console.log("Product already in favorites:", product.id);
+    return;
+  }
+  
+  // Make sure we're storing a complete product object with all required properties
+  const completeProduct = {
+    id: product.id,
+    name: product.name,
+    Image: product.Image,
+    price: product.price,
+    quantity: product.quantity || 1
+  };
+  
+  FavoritesInStorage.push(completeProduct);
   localStorage.setItem("Favorites_Products", JSON.stringify(FavoritesInStorage));
-  console.log("Product added to favorites:", product);
+  console.log("Product added to favorites:", completeProduct);
 };
 
 // !!!! functions to REMOVE FAVORITES PRODUCT FROM LOCAL STORAGE ------------
@@ -157,27 +227,77 @@ const trashFavorite = function (id) {
 
 // !!!! functions to ADD PRODUCT TO CART FROM FAVORITES ------------
 const addToCartFromFavorites = function (id) {
-  const product = FavoritesInStorage.find((item) => item.id === id);
-  if (!product) return;
-  
-  let cartProducts = JSON.parse(localStorage.getItem("Cart_Products")) || [];
-  const existingProduct = cartProducts.find((p) => p.id === id);
-  
-  if (existingProduct) {
-    existingProduct.quantity += 1;
-  } else {
-    cartProducts.push({ ...product, quantity: 1 });
+  try {
+    // Get product data
+    const product = FavoritesInStorage.find((item) => item.id === id);
+    if (!product) {
+      console.error("Product not found in favorites:", id);
+      return;
+    }
+
+    // Get cart products
+    let cartProducts = getCartProducts();
+    const existingProduct = cartProducts.find((p) => p.id === id);
+    
+    if (existingProduct) {
+      // If product already exists in cart, increase quantity
+      existingProduct.quantity += 1;
+      localStorage.setItem("Cart_Products", JSON.stringify(cartProducts));
+      
+      // Update quantity display if on cart page
+      let quantityElement = document.querySelector(`#quantity-${id}`);
+      if (quantityElement) {
+        quantityElement.innerHTML = existingProduct.quantity;
+      }
+    } else {
+      // Add new product to cart
+      cartProducts.push({ ...product, quantity: 1 });
+      localStorage.setItem("Cart_Products", JSON.stringify(cartProducts));
+      
+      // Render the cart widget for this product
+      if (typeof renderCartWidget === 'function') {
+        renderCartWidget(id);
+      } else if (window.renderCartWidget) {
+        window.renderCartWidget(id);
+      }
+    }
+
+    // Update cart display
+    if (typeof updateCartDisplay === 'function') {
+      updateCartDisplay(cartProducts);
+    } else if (window.updateCartDisplay) {
+      window.updateCartDisplay(cartProducts);
+    }
+    
+    // Open the sidebar
+    if (typeof openSidebar === 'function') {
+      openSidebar();
+    } else if (window.openSidebar) {
+      window.openSidebar();
+    }
+    
+    console.log("Product added to cart from favorites:", product);
+  } catch (error) {
+    console.error("Error adding product to cart from favorites:", error);
+    if (window.showNotification) {
+      window.showNotification("حدث خطأ في إضافة المنتج للسلة", "error");
+    }
   }
-  
-  localStorage.setItem("Cart_Products", JSON.stringify(cartProducts));
-  console.log("Product added to cart from favorites:", product);
-  
-  // Show notification
-  alert("تمت إضافة المنتج إلى سلة التسوق");
 };
 
 // Initialize favorites page on load
 document.addEventListener("DOMContentLoaded", function() {
+  console.log("DOM fully loaded");
+  console.log("Current path:", window.location.pathname);
+  console.log("Favorites container exists:", !!document.querySelector(".favorites-content"));
+  
+  // Initialize favorites
   DrawFavoritesPage();
-  console.log("Favorites page initialized");
+  console.log("Favorites page initialization complete");
+});
+
+// Also check when window loads (in case DOMContentLoaded was missed)
+window.addEventListener("load", function() {
+  console.log("Window loaded");
+  DrawFavoritesPage();
 });
