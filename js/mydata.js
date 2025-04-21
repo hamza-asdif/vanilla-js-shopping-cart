@@ -141,16 +141,11 @@ const initializeLocalData = () => {
   My_Second_Products = getCache(CACHE_KEYS.SECOND_PRODUCTS, MySecondProducts);
   Cart_Products = getCache(CACHE_KEYS.CART, []);
   Favorite_Products = getCache(CACHE_KEYS.FAVORITES, []);
-
   // Save to localStorage if not present
   setCache(Products, CACHE_KEYS.PRODUCTS);
   setCache(My_Second_Products, CACHE_KEYS.SECOND_PRODUCTS);
   setCache(Cart_Products, CACHE_KEYS.CART);
   setCache(Favorite_Products, CACHE_KEYS.FAVORITES);
-
-  // Dispatch events after initialization
-  window.dispatchEvent(new Event("productsLoaded"));
-  window.dispatchEvent(new Event("secondProductsLoaded"));
 };
 
 // Fetch products from API
