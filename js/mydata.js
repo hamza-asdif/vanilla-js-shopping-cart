@@ -1,10 +1,10 @@
 /**
- * Products, Second Products, Cart, and Favorites Data Management
- * Simplified version without complex caching
+ * Products, Cart, and Favorites Data Management
+ * Simplified version for better reliability
  */
 
-// Main products data
-const MyProducts = [
+// Default product data
+const defaultProducts = [
   {
     id: 1,
     name: "ساعة اليد الفاخرة ONOLA Watch الأكثر مبيعا في المملكة - إصدار محدود",
@@ -63,187 +63,107 @@ const MyProducts = [
   },
 ];
 
-// Second products data
-const MySecondProducts = [
-  {
-    id: 1,
-    name: "ساعة اليد الفاخرة ONOLA Watch الأكثر مبيعا في المملكة - إصدار محدود",
-    Image: "images/products/watch.jpeg",
-    price: 349,
-    quantity: 1,
-  },
-  {
-    id: 2,
-    name: "غسالة الأكواب الأتوماتيكية Rinser الأكثر مبيعا في شهر رمضان",
-    Image: "images/products/rinser-cuisine.jpeg",
-    price: 349,
-    quantity: 1,
-  },
-  {
-    id: 3,
-    name: "جهاز تبريد مقعد السيارة الذكي Magnetic Fan Car الأكثر مبيعا في العالم",
-    Image: "images/new-products/car-product.jpeg",
-    price: 349,
-    quantity: 1,
-  },
-];
-
-// Global arrays
-let Products = [];
-let Second_Products = [];
-let Cart_Products = [];
-let Favorites_Products = [];
-
-// Simple localStorage helpers
-const saveToLocalStorage = (key, data) => {
-  try {
-    localStorage.setItem(key, JSON.stringify(data));
-  } catch (error) {
-    console.error(`Error saving to localStorage (${key}):`, error);
-  }
+// Global storage keys
+const STORAGE_KEYS = {
+  PRODUCTS: "Products",
+  CART: "Cart_Products",
+  FAVORITES: "Favorites_Products",
 };
 
-const getFromLocalStorage = (key, defaultValue) => {
+// Helper functions
+const getFromStorage = (key, defaultValue) => {
   try {
     const data = localStorage.getItem(key);
     return data ? JSON.parse(data) : defaultValue;
   } catch (error) {
-    console.error(`Error reading from localStorage (${key}):`, error);
+    console.error(`Error reading from storage (${key}):`, error);
     return defaultValue;
   }
 };
 
-// Initialize data from localStorage or use defaults
+const saveToStorage = (key, data) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch (error) {
+    console.error(`Error saving to storage (${key}):`, error);
+  }
+};
+
+// Initialize data
 const initializeData = () => {
-  console.log("Initializing data in mydata.js");
+  // Load or set default products
+  const products = getFromStorage(STORAGE_KEYS.PRODUCTS, defaultProducts);
+  saveToStorage(STORAGE_KEYS.PRODUCTS, products);
   
-  // Load products from localStorage or use defaults
-  Products = getFromLocalStorage("Products", MyProducts);
-  Second_Products = getFromLocalStorage("Second_Products", MySecondProducts);
-  Cart_Products = getFromLocalStorage("Cart_Products", []);
-  Favorites_Products = getFromLocalStorage("Favorites_Products", []);
+  // Initialize empty cart and favorites
+  const cart = getFromStorage(STORAGE_KEYS.CART, []);
+  saveToStorage(STORAGE_KEYS.CART, cart);
   
-  // Save to localStorage to ensure they exist
-  saveToLocalStorage("Products", Products);
-  saveToLocalStorage("Second_Products", Second_Products);
-  saveToLocalStorage("Cart_Products", Cart_Products);
-  saveToLocalStorage("Favorites_Products", Favorites_Products);
+  const favorites = getFromStorage(STORAGE_KEYS.FAVORITES, []);
+  saveToStorage(STORAGE_KEYS.FAVORITES, favorites);
   
-  // Make products available globally
-  window.Products = Products;
-  window.Second_Products = Second_Products;
+  // Make data available globally
+  window.Products = products;
   
-  // Dispatch events to notify that data is loaded
+  // Notify that data is loaded
   window.dispatchEvent(new Event('productsLoaded'));
   window.dispatchEvent(new Event('cartUpdated'));
   window.dispatchEvent(new Event('favoritesUpdated'));
-  
-  // Try to fetch products from API
-  fetchProductsFromAPI();
 };
 
-// Fetch products from API
-const fetchProductsFromAPI = async () => {
-  try {
-    const URL = "https://api.jsonbin.io/v3/b/67c54486e41b4d34e49fc194";
-    const response = await fetch(URL, {
-      headers: {
-        "Content-Type": "application/json",
-        "X-Master-Key": "$2a$10$JSduiJIAxlAAiB5UQSJ9n.rCUN94IKEeZ8QwNDmKsxfCuURp/m3Xe",
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data = await response.json();
-    
-    // Update products with API data if available
-    if (data.record && data.record.Products) {
-      Products = data.record.Products;
-      saveToLocalStorage("Products", Products);
-      window.Products = Products;
-    }
-    
-    if (data.record && data.record.Second_Products) {
-      Second_Products = data.record.Second_Products;
-      saveToLocalStorage("Second_Products", Second_Products);
-      window.Second_Products = Second_Products;
-    }
-    
-    // Notify that products have been updated
-    window.dispatchEvent(new Event('productsLoaded'));
-  } catch (error) {
-    console.error("Error fetching products from API:", error);
-    // Continue with local data if API fails
-  }
-};
-
-// Cart management functions
+// Cart management
 const addToCart = (product) => {
-  // Get the latest cart data from localStorage
-  Cart_Products = getFromLocalStorage("Cart_Products", []);
+  const cart = getFromStorage(STORAGE_KEYS.CART, []);
+  const existing = cart.find(item => item.id === product.id);
   
-  const existingProduct = Cart_Products.find((p) => p.id === product.id);
-  if (existingProduct) {
-    existingProduct.quantity += 1;
+  if (existing) {
+    existing.quantity += 1;
   } else {
-    Cart_Products.push({ ...product, quantity: 1 });
+    cart.push({ ...product, quantity: 1 });
   }
   
-  saveToLocalStorage("Cart_Products", Cart_Products);
-  window.dispatchEvent(new Event("cartUpdated"));
+  saveToStorage(STORAGE_KEYS.CART, cart);
+  window.dispatchEvent(new Event('cartUpdated'));
 };
 
 const removeFromCart = (productId) => {
-  // Get the latest cart data from localStorage
-  Cart_Products = getFromLocalStorage("Cart_Products", []);
+  const cart = getFromStorage(STORAGE_KEYS.CART, []);
+  const updatedCart = cart.filter(item => item.id !== productId);
   
-  Cart_Products = Cart_Products.filter((p) => p.id !== productId);
-  saveToLocalStorage("Cart_Products", Cart_Products);
-  window.dispatchEvent(new Event("cartUpdated"));
+  saveToStorage(STORAGE_KEYS.CART, updatedCart);
+  window.dispatchEvent(new Event('cartUpdated'));
 };
 
 const updateCartQuantity = (productId, quantity) => {
-  // Get the latest cart data from localStorage
-  Cart_Products = getFromLocalStorage("Cart_Products", []);
+  const cart = getFromStorage(STORAGE_KEYS.CART, []);
+  const item = cart.find(item => item.id === productId);
   
-  const product = Cart_Products.find((p) => p.id === productId);
-  if (product) {
-    product.quantity = quantity;
-    saveToLocalStorage("Cart_Products", Cart_Products);
-    window.dispatchEvent(new Event("cartUpdated"));
+  if (item) {
+    item.quantity = quantity;
+    saveToStorage(STORAGE_KEYS.CART, cart);
+    window.dispatchEvent(new Event('cartUpdated'));
   }
 };
 
-// Favorites management functions
+// Favorites management
 const toggleFavorite = (product) => {
-  // Get the latest favorites data from localStorage
-  Favorites_Products = getFromLocalStorage("Favorites_Products", []);
+  const favorites = getFromStorage(STORAGE_KEYS.FAVORITES, []);
+  const index = favorites.findIndex(item => item.id === product.id);
   
-  const index = Favorites_Products.findIndex((p) => p.id === product.id);
   if (index >= 0) {
-    Favorites_Products.splice(index, 1);
+    favorites.splice(index, 1);
   } else {
-    Favorites_Products.push(product);
+    favorites.push(product);
   }
   
-  saveToLocalStorage("Favorites_Products", Favorites_Products);
-  window.dispatchEvent(new Event("favoritesUpdated"));
+  saveToStorage(STORAGE_KEYS.FAVORITES, favorites);
+  window.dispatchEvent(new Event('favoritesUpdated'));
 };
 
 const isFavorite = (productId) => {
-  // Get the latest favorites data from localStorage
-  Favorites_Products = getFromLocalStorage("Favorites_Products", []);
-  return Favorites_Products.some((p) => p.id === productId);
+  const favorites = getFromStorage(STORAGE_KEYS.FAVORITES, []);
+  return favorites.some(item => item.id === productId);
 };
-
-// Getter functions for other files to use
-window.getProducts = () => getFromLocalStorage("Products", Products);
-window.getSecondProducts = () => getFromLocalStorage("Second_Products", Second_Products);
-window.getCartProducts = () => getFromLocalStorage("Cart_Products", []);
-window.getFavoriteProducts = () => getFromLocalStorage("Favorites_Products", []);
 
 // Export functions for global access
 window.addToCart = addToCart;
@@ -251,9 +171,6 @@ window.removeFromCart = removeFromCart;
 window.updateCartQuantity = updateCartQuantity;
 window.toggleFavorite = toggleFavorite;
 window.isFavorite = isFavorite;
-
-// Log for debugging
-console.log("mydata.js loaded");
 
 // Initialize data when the script loads
 initializeData();
