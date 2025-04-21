@@ -85,9 +85,16 @@ const updateCartState = (cartProducts) => {
 
 // Draw cart page
 const drawCartPage = () => {
-  if (!window.location.pathname.includes("cart.html")) return;
-  
   console.log("Drawing cart page");
+  
+  // Check if we're on the cart page
+  const currentPage = window.location.pathname;
+  const isCartPage = currentPage === '/' || currentPage === '/cart' || currentPage.includes('/cart.html');
+  
+  if (!isCartPage) {
+    console.log("Not on cart page, path:", currentPage);
+    return;
+  }
   
   // Update the selector to match the actual HTML structure
   const cartContainer = document.querySelector(".cart-table");
