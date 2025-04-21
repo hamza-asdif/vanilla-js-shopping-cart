@@ -9,6 +9,9 @@ const validatePrice = (price) => {
   return !isNaN(value) && value >= 0;
 };
 
+// Get cart products from localStorage
+const getCartProducts = () => JSON.parse(localStorage.getItem("Cart_Products")) || [];
+
 // Price calculation functions
 const calculateCartTotal = (cartProducts) => {
   if (!cartProducts || cartProducts.length === 0) return 0;
@@ -22,10 +25,19 @@ const calculateCartTotal = (cartProducts) => {
   }, 0);
 };
 
+// DOM update helper
+const updateDomElementCart = (selector, content) => {
+  const element = document.querySelector(selector);
+  if (element) element.innerHTML = content;
+};
+
 // Cart counter management
 const updateCartCounter = function () {
-  const cartProducts = safeLocalStorageGet("Cart_Products", []);
+  const cartProducts = JSON.parse(localStorage.getItem("Cart_Products")) || [];
   const itemCount = cartProducts.length;
+  
+  const HeaderCartCounter = document.querySelector(".cart-counter");
+  const sidebarCartCounter = document.querySelector(".sidebar-header-span");
 
   if (HeaderCartCounter) {
     HeaderCartCounter.style.display = itemCount > 0 ? "block" : "none";
@@ -36,364 +48,288 @@ const updateCartCounter = function () {
     sidebarCartCounter.innerHTML = `${itemCount} عناصر`;
   }
 
-  safeLocalStorageSet("Cart_Counter", itemCount);
+  try {
+    localStorage.setItem("Cart_Counter", JSON.stringify(itemCount));
+  } catch (error) {
+    console.error("Error updating cart counter:", error);
+  }
+  
   return itemCount;
 };
 
 const updateCartState = (cartProducts) => {
   try {
     const total = calculateCartTotal(cartProducts);
-    updateDomElement(".cart-span", `${formatPrice(total)} ريال سعودي`);
-    updateDomElement("#cart-sum-span", `${formatPrice(total)} ريال سعودي`);
+    updateDomElementCart(".cart-span", `${formatPrice(total)} ريال سعودي`);
+    updateDomElementCart("#cart-sum-span", `${formatPrice(total)} ريال سعودي`);
     updateCartCounter();
-    safeLocalStorageSet("Cart_Products", cartProducts);
-    safeLocalStorageSet("TotalPrice", total);
+    
+    try {
+      localStorage.setItem("Cart_Products", JSON.stringify(cartProducts));
+      localStorage.setItem("TotalPrice", JSON.stringify(total));
+    } catch (error) {
+      console.error("Error updating cart state in localStorage:", error);
+    }
   } catch (error) {
     console.error("Error updating cart state:", error);
-    showNotification("حدث خطأ في تحديث السلة");
   }
 };
 
-// Helper functions
-const updateCartSummary = (cartProducts) => {
+// Draw cart page
+const drawCartPage = () => {
+  if (!window.location.pathname.includes("cart.html")) return;
+  
+  console.log("Drawing cart page");
+  
+  const cartContainer = document.querySelector(".cart-container");
+  if (!cartContainer) {
+    console.error("Cart container not found");
+    return;
+  }
+  
+  const cartProducts = getCartProducts();
+  console.log("Cart products:", cartProducts);
+  
+  if (!cartProducts.length) {
+    cartContainer.innerHTML = `
+      <div class="empty-cart">
+        <i class="fa-solid fa-shopping-cart"></i>
+        <h2>سلة التسوق فارغة</h2>
+        <p>قم بإضافة منتجات إلى سلة التسوق لتظهر هنا</p>
+        <a href="index.html" class="back-to-shop">العودة للتسوق</a>
+      </div>
+    `;
+    updateDomElementCart(".cart-total-price", "0.00 ريال سعودي");
+    return;
+  }
+  
+  const cartItemsHTML = cartProducts.map((product, index) => `
+    <div class="cart-item" id="cart-item-${product.id}">
+      <div class="cart-item-image">
+        <img src="${product.Image}" alt="${product.name}" onclick="CreateProductPageId(${product.id})">
+      </div>
+      <div class="cart-item-details">
+        <h3 class="cart-item-title" onclick="CreateProductPageId(${product.id})">${product.name}</h3>
+        <div class="cart-item-price">${product.price} ريال سعودي</div>
+        <div class="cart-item-controls">
+          <div class="quantity-control">
+            <button class="quantity-decrease" onclick="decreaseQuantity(${product.id})">-</button>
+            <input type="number" min="1" max="99" value="${product.quantity}" 
+              onchange="updateItemQuantity(${product.id}, this.value)" 
+              class="quantity-input" id="quantity-input-${product.id}">
+            <button class="quantity-increase" onclick="increaseQuantity(${product.id})">+</button>
+          </div>
+          <button class="remove-item" onclick="removeCartItem(${product.id})">
+            <i class="fas fa-trash"></i> حذف
+          </button>
+        </div>
+      </div>
+      <div class="cart-item-subtotal">
+        <span>${formatPrice(product.price * product.quantity)} ريال سعودي</span>
+      </div>
+    </div>
+  `).join("");
+  
+  cartContainer.innerHTML = cartItemsHTML;
+  
+  // Update cart total
   const total = calculateCartTotal(cartProducts);
-
-  // Update header total
-  updateDomElement("#cart-total", `${formatPrice(total)} ريال سعودي`);
-
-  // Update summary section
-  updateDomElement("#products-total", `${formatPrice(total)} ريال سعودي`);
-  updateDomElement("#final-total", `${formatPrice(total)} ريال سعودي`);
-
-  // Show/hide summary section based on cart state
-  const summarySection = document.querySelector(".cart-summary-section");
-  if (summarySection) {
-    summarySection.style.display = cartProducts.length === 0 ? "none" : "block";
-  }
+  updateDomElementCart(".cart-total-price", `${formatPrice(total)} ريال سعودي`);
 };
 
-// Cart page drawing function
-const CartPageDraw = function () {
-  if (window.location.pathname.endsWith("cart.html")) {
-    let CartProducts = JSON.parse(localStorage.getItem("Cart_Products")) || [];
-    let cartHTML = "";
-
+// Cart item quantity management
+const increaseQuantity = (id) => {
+  const cartProducts = getCartProducts();
+  const product = cartProducts.find(p => p.id === id);
+  
+  if (product && product.quantity < 99) {
+    product.quantity += 1;
+    
     try {
-      if (CartProducts.length === 0) {
-        cartHTML = `
-          <div class="cart-empty">
-              <i class="fas fa-shopping-cart"></i>
-              <h3>السلة فارغة</h3>
-              <p>لم تقم بإضافة أي منتجات إلى سلة المشتريات بعد</p>
-              <a href="index.html" class="back-to-shop">
-                  <i class="fas fa-shopping-bag"></i>
-                  تصفح المنتجات
-              </a>
-          </div>`;
-      } else {
-        CartProducts.forEach((item) => {
-          cartHTML += `<div class="cart-table-data" id="product-${item.id}">
-              <div class="cart-data-img-box">
-                  <img src="${item.Image}" alt="${
-            item.name
-          }" onclick="driveProducts(${item.id})">
-              </div>
-              <div class="cart-data-product-title">
-                  <h4 class="cart-data-title" onclick="driveProducts(${
-                    item.id
-                  })">${item.name}</h4>
-              </div>
-              <div class="cart-data-quantity">
-                  <i class="fa-solid fa-plus" onclick="IncreaseQuantity(${
-                    item.id
-                  })"></i>
-                  <span class="quantity-span-${item.id}">${item.quantity}</span>
-                  <i class="fa-solid fa-minus" onclick="decreaseQuantity(${
-                    item.id
-                  })"></i>
-              </div>
-              <div class="cart-data-price">
-                  <span class="product-price">${formatPrice(
-                    item.price
-                  )} ريال سعودي</span>
-              </div>
-              <div class="cart-data-trash">
-                  <i class="fa-regular fa-trash-can" onclick="TrashFromCart_CartPage(${
-                    item.id
-                  })"></i>
-              </div>
-          </div>`;
-        });
-      }
-
-      CartPageDom.innerHTML = cartHTML;
-      updateCartSummary(CartProducts);
-      updateCartState(CartProducts);
+      localStorage.setItem("Cart_Products", JSON.stringify(cartProducts));
     } catch (error) {
-      console.error("Error drawing cart page:", error);
-      CartPageDom.innerHTML =
-        '<div class="cart-error">حدث خطأ أثناء تحميل سلة التسوق</div>';
+      console.error("Error updating cart products:", error);
     }
+    
+    // Update UI
+    const quantityInput = document.querySelector(`#quantity-input-${id}`);
+    if (quantityInput) quantityInput.value = product.quantity;
+    
+    const subtotal = document.querySelector(`#cart-item-${id} .cart-item-subtotal span`);
+    if (subtotal) subtotal.textContent = `${formatPrice(product.price * product.quantity)} ريال سعودي`;
+    
+    updateCartState(cartProducts);
   }
 };
-CartPageDraw();
 
-// !!!!! functions to move into product page when user click on item
-const driveProducts = function (id) {
-  localStorage.setItem("Product_Id", id);
-
-  setTimeout(function () {
-    window.location = "product-page.html";
-  }, 1000);
+const decreaseQuantity = (id) => {
+  const cartProducts = getCartProducts();
+  const product = cartProducts.find(p => p.id === id);
+  
+  if (product && product.quantity > 1) {
+    product.quantity -= 1;
+    
+    try {
+      localStorage.setItem("Cart_Products", JSON.stringify(cartProducts));
+    } catch (error) {
+      console.error("Error updating cart products:", error);
+    }
+    
+    // Update UI
+    const quantityInput = document.querySelector(`#quantity-input-${id}`);
+    if (quantityInput) quantityInput.value = product.quantity;
+    
+    const subtotal = document.querySelector(`#cart-item-${id} .cart-item-subtotal span`);
+    if (subtotal) subtotal.textContent = `${formatPrice(product.price * product.quantity)} ريال سعودي`;
+    
+    updateCartState(cartProducts);
+  }
 };
 
-// !!!! function to increase | decrease the product quantity on Cart Page
-const animateQuantityChange = (element, type) => {
-  if (!element) return;
-  element.classList.add("quantity-change");
-  element.classList.add(type === "increase" ? "quantity-up" : "quantity-down");
-  setTimeout(() => {
-    element.classList.remove("quantity-change", "quantity-up", "quantity-down");
-  }, 300);
+const updateItemQuantity = (id, value) => {
+  const quantity = parseInt(value);
+  
+  if (!validateQuantity(quantity)) {
+    // Reset to valid value
+    const cartProducts = getCartProducts();
+    const product = cartProducts.find(p => p.id === id);
+    
+    const quantityInput = document.querySelector(`#quantity-input-${id}`);
+    if (quantityInput && product) quantityInput.value = product.quantity;
+    return;
+  }
+  
+  const cartProducts = getCartProducts();
+  const product = cartProducts.find(p => p.id === id);
+  
+  if (product) {
+    product.quantity = quantity;
+    
+    try {
+      localStorage.setItem("Cart_Products", JSON.stringify(cartProducts));
+    } catch (error) {
+      console.error("Error updating cart products:", error);
+    }
+    
+    const subtotal = document.querySelector(`#cart-item-${id} .cart-item-subtotal span`);
+    if (subtotal) subtotal.textContent = `${formatPrice(product.price * product.quantity)} ريال سعودي`;
+    
+    updateCartState(cartProducts);
+  }
 };
 
-const IncreaseQuantity = function (id) {
+const removeCartItem = (id) => {
+  const cartProducts = getCartProducts();
+  const updatedCart = cartProducts.filter(p => p.id !== id);
+  
   try {
-    let CartProducts = safeLocalStorageGet("Cart_Products", []);
-    const productIndex = CartProducts.findIndex((p) => p.id == id);
-
-    if (productIndex !== -1) {
-      const newQty = CartProducts[productIndex].quantity + 1;
-      if (validateQuantity(newQty)) {
-        CartProducts[productIndex].quantity = newQty;
-        const quantityElement = document.querySelector(`.quantity-span-${id}`);
-        if (quantityElement) {
-          animateQuantityChange(quantityElement, "increase");
-          quantityElement.textContent = newQty;
-        }
-        updateCartState(CartProducts);
-        UpdateMainProducts(id, "increase");
-        showNotification("تم تحديث الكمية بنجاح", "success");
-      } else {
-        showNotification("لا يمكن زيادة الكمية أكثر من ذلك");
-        const plusButton = document.querySelector(
-          `.cart-data-quantity i.fa-plus[onclick*="${id}"]`
-        );
-        if (plusButton) {
-          plusButton.classList.add("quantity-limit-reached");
-          setTimeout(
-            () => plusButton.classList.remove("quantity-limit-reached"),
-            1000
-          );
-        }
-      }
-    }
+    localStorage.setItem("Cart_Products", JSON.stringify(updatedCart));
   } catch (error) {
-    console.error("Error increasing quantity:", error);
-    showNotification("حدث خطأ في تحديث الكمية");
+    console.error("Error updating cart products:", error);
   }
-};
-
-const decreaseQuantity = function (id) {
-  try {
-    let CartProducts = safeLocalStorageGet("Cart_Products", []);
-    const productIndex = CartProducts.findIndex((p) => p.id == id);
-
-    if (productIndex !== -1) {
-      if (CartProducts[productIndex].quantity > 1) {
-        CartProducts[productIndex].quantity -= 1;
-        updateDomElement(
-          `.quantity-span-${id}`,
-          CartProducts[productIndex].quantity
-        );
-        updateCartState(CartProducts);
-        UpdateMainProducts(id, "decrease");
-        showNotification("تم تحديث الكمية بنجاح", "success");
-      } else {
-        showNotification("الحد الأدنى للكمية هو 1");
-        const minusButton = document.querySelector(
-          `.cart-data-quantity i.fa-minus[onclick*="${id}"]`
-        );
-        if (minusButton) {
-          minusButton.classList.add("quantity-limit-reached");
-          setTimeout(
-            () => minusButton.classList.remove("quantity-limit-reached"),
-            1000
-          );
-        }
-      }
-    }
-  } catch (error) {
-    console.error("Error decreasing quantity:", error);
-    showNotification("حدث خطأ في تحديث الكمية");
+  
+  // Remove from UI
+  const cartItem = document.querySelector(`#cart-item-${id}`);
+  if (cartItem) cartItem.remove();
+  
+  // Check if cart is empty
+  if (updatedCart.length === 0) {
+    drawCartPage();
   }
+  
+  updateCartState(updatedCart);
 };
 
-const UpdateMainProducts = function (id, operation) {
-  try {
-    let oldProducts = safeLocalStorageGet("NewProducts", []);
-    if (!Array.isArray(oldProducts)) {
-      console.warn("NewProducts is not an array, initializing empty array");
-      oldProducts = [];
-    }
-
-    oldProducts = oldProducts.map((product) => {
-      if (product.id === id) {
-        return {
-          ...product,
-          quantity:
-            operation === "increase"
-              ? (product.quantity || 0) + 1
-              : Math.max((product.quantity || 0) - 1, 0),
-        };
-      }
-      return product;
-    });
-
-    safeLocalStorageSet("NewProducts", oldProducts);
-  } catch (error) {
-    console.error("Error updating main products:", error);
-    showNotification("حدث خطأ في تحديث الكمية");
-  }
-};
-
-const changeSidebarQuantity = function (id, product) {
-  let quantityElement = document.querySelector(`#quantity-${id}`);
-  quantityElement.innerHTML = product.quantity;
-};
-
-// !!!! function to reset quantity of product if it deleted from cart
-const resetQuantity = function (id) {
-  // get from localstorage
-  let NewDBProducts = JSON.parse(localStorage.getItem("NewProducts")) || [];
-
-  // find product with the id
-  NewDBProducts = NewDBProducts.map((product) => {
-    if (product.id == id) {
-      product.quantity = 1;
-      console.log("الكمية تم إعادة تعيينها للمنتج:", product);
-    }
-    return product;
-  });
-
-  // set data into storage
-  localStorage.setItem("NewProducts", JSON.stringify(NewDBProducts));
-};
-
-// !!! TRASH ICON FUNCTIONS TO DELETE THE PRODUCT FROM CART
+// Function to remove item from cart
 const TrashFromCart_HomePage = function (id) {
   try {
-    let cartProducts = safeLocalStorageGet("Cart_Products", []);
-    const productElement = document.querySelector(
-      `#sidebar-product-container-${id}`
-    );
-    const cartPageElement = document.querySelector(`#product-${id}`);
-
+    let cartProducts = getCartProducts();
+    
+    // Remove product from DOM
+    const productElement = document.querySelector(`#sidebar-product-container-${id}`);
     if (productElement) {
       productElement.style.transition = "all 0.3s ease";
       productElement.style.transform = "translateX(-100%)";
       productElement.style.opacity = "0";
-
-      // Also animate cart page element if exists
-      if (cartPageElement) {
-        cartPageElement.style.transition = "all 0.3s ease";
-        cartPageElement.style.transform = "translateX(100%)";
-        cartPageElement.style.opacity = "0";
-      }
-
+      
       setTimeout(() => {
         productElement.remove();
-        if (cartPageElement) cartPageElement.remove();
-
-        cartProducts = cartProducts.filter((product) => product.id !== id);
-        safeLocalStorageSet("Cart_Products", cartProducts);
-        resetQuantity(id);
+        
+        // Update cart data
+        cartProducts = cartProducts.filter(product => product.id !== id);
+        
+        try {
+          localStorage.setItem("Cart_Products", JSON.stringify(cartProducts));
+        } catch (error) {
+          console.error("Error updating cart products:", error);
+        }
+        
         updateCartState(cartProducts);
-        showNotification("تم حذف المنتج من السلة", "success");
-
-        // If cart is empty in cart page, show empty message
-        if (
-          window.location.pathname.endsWith("cart.html") &&
-          cartProducts.length === 0
-        ) {
-          CartPageDraw();
+        
+        // Show notification if available
+        if (window.showNotification) {
+          window.showNotification("تم حذف المنتج من السلة", "success");
         }
       }, 300);
     }
   } catch (error) {
     console.error("Error removing product:", error);
-    showNotification("حدث خطأ في حذف المنتج", "error");
-  }
-};
-
-const TrashFromCart_CartPage = function (id) {
-  try {
-    const productElement = document.querySelector(`.cart-table #product-${id}`);
-    if (productElement) {
-      productElement.classList.add("removing");
-      setTimeout(() => {
-        productElement.remove();
-        TrashFromCart_HomePage(id);
-      }, 300);
+    if (window.showNotification) {
+      window.showNotification("حدث خطأ في حذف المنتج", "error");
     }
-  } catch (error) {
-    console.error("Error removing product:", error);
-    showNotification("حدث خطأ في حذف المنتج");
   }
 };
 
 // Function to restore cart state
 const restoreCartState = function () {
   const cartProducts = JSON.parse(localStorage.getItem("Cart_Products")) || [];
-
+  
+  const SidebarUlDiv = document.querySelector(".ul-product-dom");
   if (SidebarUlDiv) {
     SidebarUlDiv.innerHTML = "";
 
     cartProducts.forEach((product) => {
       const productHtml = `
-                <div id="sidebar-product-container-${product.id}">
-                    <li id="product-${product.id}">
-                        <div class="cart-product-box">
-                            <img src="${product.Image}" alt="">
-                        </div>
-                        <a href="#">
-                            <span class="cart-product-title" onclick="CreateProductPageId(${
-                              product.id
-                            })">
-                                ${product.name}
-                            </span>
-                        </a>
-                        <div class="cart-product-icons">
-                            <button type="button">
-                                <i class="fa-solid fa-pen"></i>
-                            </button>
-                            <button type="button">
-                                <i class="fa-regular fa-trash-can" onclick="TrashFromCart_HomePage(${
-                                  product.id
-                                })"></i>
-                            </button>
-                        </div>
-                    </li>
-                    <div class="cart-product-infos" id="product-div-${
-                      product.id
-                    }">
-                        <span class="cart-product-infos-title">الكمية</span>
-                        <span class="cart-product-quantite" id="quantity-${
-                          product.id
-                        }">${product.quantity}</span>
-                        <span class="cart-product-price">${formatPrice(
-                          product.price
-                        )} ريال سعودي</span>
-                    </div>
-                </div>
-            `;
+        <div id="sidebar-product-container-${product.id}">
+          <li id="product-${product.id}">
+            <div class="cart-product-box">
+              <img src="${product.Image}" alt="">
+            </div>
+            <a href="#">
+              <span class="cart-product-title" onclick="CreateProductPageId(${product.id})">
+                ${product.name}
+              </span>
+            </a>
+            <div class="cart-product-icons">
+              <button type="button">
+                <i class="fa-solid fa-pen"></i>
+              </button>
+              <button type="button">
+                <i class="fa-regular fa-trash-can" onclick="TrashFromCart_HomePage(${product.id})"></i>
+              </button>
+            </div>
+          </li>
+          <div class="cart-product-infos" id="product-div-${product.id}">
+            <span class="cart-product-infos-title">الكمية</span>
+            <span class="cart-product-quantite" id="quantity-${product.id}">${product.quantity}</span>
+            <span class="cart-product-price">${formatPrice(product.price)} ريال سعودي</span>
+          </div>
+        </div>
+      `;
       SidebarUlDiv.insertAdjacentHTML("beforeend", productHtml);
     });
   }
-  updateCartDisplay(cartProducts);
+  
+  updateCartState(cartProducts);
 };
 
-// Initialize cart on page load
-document.addEventListener("DOMContentLoaded", function () {
-  restoreCartState();
+// Initialize cart page
+document.addEventListener("DOMContentLoaded", function() {
+  if (typeof drawCartPage === 'function') {
+    drawCartPage();
+  }
+  if (typeof updateCartCounter === 'function') {
+    updateCartCounter();
+  }
+  console.log("Cart page initialized");
 });

@@ -93,7 +93,7 @@ const CACHE_KEYS = {
   PRODUCTS: "Products",
   SECOND_PRODUCTS: "Second_Products",
   CART: "Cart_Products",
-  FAVORITES: "Favorite_Products",
+  FAVORITES: "Favorites_Products", // تصحيح اسم المفتاح
   CACHE_TIMESTAMP: "products_cache_timestamp",
 };
 
@@ -111,8 +111,12 @@ const isCacheValid = () => {
 };
 
 const setCache = (data, key) => {
-  localStorage.setItem(key, JSON.stringify(data));
-  localStorage.setItem(CACHE_KEYS.CACHE_TIMESTAMP, Date.now().toString());
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+    localStorage.setItem(CACHE_KEYS.CACHE_TIMESTAMP, Date.now().toString());
+  } catch (error) {
+    console.error(`Error setting cache for ${key}:`, error);
+  }
 };
 
 const getCache = (key, fallbackData) => {
@@ -141,11 +145,19 @@ const initializeLocalData = () => {
   My_Second_Products = getCache(CACHE_KEYS.SECOND_PRODUCTS, MySecondProducts);
   Cart_Products = getCache(CACHE_KEYS.CART, []);
   Favorite_Products = getCache(CACHE_KEYS.FAVORITES, []);
+  
   // Save to localStorage if not present
   setCache(Products, CACHE_KEYS.PRODUCTS);
   setCache(My_Second_Products, CACHE_KEYS.SECOND_PRODUCTS);
   setCache(Cart_Products, CACHE_KEYS.CART);
   setCache(Favorite_Products, CACHE_KEYS.FAVORITES);
+  
+  // Make sure window.Products is set
+  window.Products = Products;
+  window.Second_Products = My_Second_Products;
+  
+  // Dispatch event to notify that products are loaded
+  window.dispatchEvent(new Event('productsLoaded'));
 };
 
 // Fetch products from API

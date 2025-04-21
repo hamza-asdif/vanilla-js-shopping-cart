@@ -596,7 +596,7 @@
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
   transform: translateX(-100%);
   transition: transform 0.3s ease;
-  z-index: 1000;
+  z-index: 1001; /* زيادة z-index لجعله أعلى من الـ overlay */
   display: flex;
   flex-direction: column;
 }
@@ -853,17 +853,24 @@
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
-  z-index: 999;
+  z-index: 998; /* تقليل z-index لجعله أقل من header */
   display: none;
+  pointer-events: none; /* إضافة هذه الخاصية لجعل الـ overlay غير قابل للتفاعل معه بشكل افتراضي */
 }
 
 .mobile-overlay.active {
   display: block;
+  pointer-events: auto; /* تفعيل التفاعل عند تنشيط الـ overlay */
 }
 
 @media screen and (max-width: 768px) {
   .cart-sidebar {
     width: 100%;
     max-width: 100%;
+  }
+  
+  /* إخفاء أيقونة القائمة عند فتح سلة التسوق */
+  .cart-sidebar.active ~ .menu-toggle {
+    display: none;
   }
 }

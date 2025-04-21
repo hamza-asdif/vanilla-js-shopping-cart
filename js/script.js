@@ -1,11 +1,25 @@
 let HomePageDom = document.querySelector(".product-data-section");
 
 // Single source of truth for products data
-const getProducts = () => JSON.parse(localStorage.getItem("Products")) || [];
-const getSecondProducts = () =>
-  JSON.parse(localStorage.getItem("Second_Products")) || [];
-const getCartProducts = () =>
-  JSON.parse(localStorage.getItem("Cart_Products")) || [];
+// Only define these functions if they don't already exist in the global scope
+if (typeof getProducts !== 'function') {
+  window.getProducts = () => JSON.parse(localStorage.getItem("Products")) || [];
+}
+
+if (typeof getSecondProducts !== 'function') {
+  window.getSecondProducts = () =>
+    JSON.parse(localStorage.getItem("Second_Products")) || [];
+}
+
+if (typeof getCartProducts !== 'function') {
+  window.getCartProducts = () =>
+    JSON.parse(localStorage.getItem("Cart_Products")) || [];
+}
+
+if (typeof getFavoriteProducts !== 'function') {
+  window.getFavoriteProducts = () =>
+    JSON.parse(localStorage.getItem("Favorites_Products")) || [];
+}
 
 // Add this default second products data
 const defaultSecondProducts = [
@@ -40,6 +54,7 @@ const initializeSecondProducts = () => {
       "Second_Products",
       JSON.stringify(defaultSecondProducts)
     );
+    console.log("Second products initialized");
   }
 };
 
@@ -222,6 +237,51 @@ const DrawHomePageProducts = function () {
   }
 };
 
+// !!!!!! --------- functions to DRAW THE SECOND PRODUCTS WIDGETS ON HOME PAGE
+const drawSecondProduct = function () {
+  if (!window.location.pathname.includes("index.html") && 
+      !window.location.pathname.endsWith('/')) return;
+
+  const secondProductDom = document.querySelector(".main-second-product");
+  if (!secondProductDom) return;
+
+  let secondProducts = getSecondProducts();
+
+  // Use default products if none exist
+  if (!secondProducts || !secondProducts.length) {
+    secondProducts = defaultSecondProducts;
+    localStorage.setItem("Second_Products", JSON.stringify(secondProducts));
+    console.log("Using default second products");
+  }
+
+  console.log("Second products:", secondProducts); // للتشخيص
+
+  const SecondProductsHtml = secondProducts
+    .map(
+      (product) => `
+        <div class="product-box">
+            <a href="#" class="second-product-link">
+                <div class="second-product-img-box">
+                    <img src="${product.Image}" alt="${product.name}" onclick="CreateSecondProductPageId(${product.id})">
+                </div>
+                <div class="second-product-product">
+                    <h2 class="second-product-product-title">${product.name}</h2>
+                    <div class="second-product-prices">
+                        <span class="second-product-old-price">${Math.round(product.price * 1.2)} ريال سعودي</span>
+                        <span class="second-product-price">${product.price} ريال سعودي</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+    `
+    )
+    .join("");
+
+  secondProductDom.innerHTML =
+    SecondProductsHtml ||
+    '<div class="no-products">لا توجد منتجات متاحة</div>';
+};
+
 // !!!! functions to get product to move into PRODUCTS PAGE
 const CreateProductPageId = function (id) {
   const products = getProducts();
@@ -240,47 +300,6 @@ const CreateSecondProductPageId = function (id) {
     localStorage.setItem("Second_Product_Id", product.id);
     window.location = "product-page.html";
   }
-};
-
-// !!!!!! --------- functions to DRAW THE SECOND PRODUCTS WIDGETS ON HOME PAGE
-const drawSecondProduct = function () {
-  if (!window.location.pathname.endsWith("index.html")) return;
-
-  const secondProductDom = document.querySelector(".main-second-product");
-  if (!secondProductDom) return;
-
-  let secondProducts = getSecondProducts();
-
-  // Use default products if none exist
-  if (!secondProducts || !secondProducts.length) {
-    secondProducts = defaultSecondProducts;
-    localStorage.setItem("Second_Products", JSON.stringify(secondProducts));
-  }
-
-  const SecondProductsHtml = secondProducts
-    .map(
-      (product) => `
-        <div class="product-box">
-            <a href="#" class="second-product-link">
-                <div class="second-product-img-box">
-                    <img src="${product.Image}" alt="${product.name}" onclick="CreateSecondProductPageId(${product.id})">
-                </div>
-                <div class="second-product-product">
-                    <h2 class="second-product-product-title">${product.name}</h2>
-                    <div class="second-product-prices">
-                        <span class="second-product-old-price">249 ريال سعودي</span>
-                        <span class="second-product-price">${product.price} ريال سعودي</span>
-                    </div>
-                </div>
-            </a>
-        </div>
-    `
-    )
-    .join("");
-
-  secondProductDom.innerHTML =
-    SecondProductsHtml ||
-    '<div class="no-products">No products available</div>';
 };
 
 // Add this function to check favorites state
@@ -312,25 +331,64 @@ window.addEventListener("beforeunload", function () {
 });
 
 // Initialize products
-window.addEventListener("productsLoaded", DrawHomePageProducts);
+window.addEventListener("productsLoaded", function() {
+  DrawHomePageProducts();
+  drawSecondProduct();
+  console.log("Products loaded event triggered");
+});
 
 // Also try to draw products on DOMContentLoaded
 document.addEventListener("DOMContentLoaded", function () {
+  // تهيئة المنتجات إذا لم تكن موجودة
+  initializeSecondProducts();
+  
+  // محاولة عرض المنتجات
+  DrawHomePageProducts();
+  drawSecondProduct();
+  
+  // استدعاء دالة restoreCartState فقط إذا كانت موجودة
+  if (typeof restoreCartState === 'function') {
+    restoreCartState();
+  } else {
+    console.log("restoreCartState function not available, skipping cart restoration");
+    // تحديث عداد السلة على الأقل
+    const cartProducts = JSON.parse(localStorage.getItem("Cart_Products")) || [];
+    const itemCount = cartProducts.length;
+    const HeaderCartCounter = document.querySelector(".cart-counter");
+    if (HeaderCartCounter) {
+      HeaderCartCounter.style.display = itemCount > 0 ? "block" : "none";
+      HeaderCartCounter.innerHTML = itemCount;
+    }
+  }
+  
+  updateFavoritesButtonsState();
+  
+  console.log("DOM loaded, products initialized");
+  
+  // إذا كانت المنتجات موجودة في window، عرضها
   if (window.Products) {
+    console.log("Window products found");
     DrawHomePageProducts();
   }
+  
+  // التأكد من وجود المنتجات في localStorage
+  const storedProducts = JSON.parse(localStorage.getItem("Products"));
+  const storedSecondProducts = JSON.parse(localStorage.getItem("Second_Products"));
+  
+  console.log("Stored products:", storedProducts);
+  console.log("Stored second products:", storedSecondProducts);
 });
 
-document.addEventListener("DOMContentLoaded", () => {
-  initializeSecondProducts();
-  const products = getProducts();
-  const secondProducts = getSecondProducts();
-  if (products.length > 0 || secondProducts.length > 0) {
-    DrawHomePageProducts();
-    drawSecondProduct();
-    restoreCartState();
-    updateFavoritesButtonsState();
-  }
+// إضافة مستمع للتأكد من تحميل المنتجات الثانية
+window.addEventListener("secondProductsLoaded", function() {
+  drawSecondProduct();
+  console.log("Second products loaded event triggered");
+});
+
+// إضافة مستمع لتحديث المفضلة
+window.addEventListener("favoritesUpdated", function() {
+  updateFavoritesButtonsState();
+  console.log("Favorites updated event triggered");
 });
 
 const storedProducts = JSON.parse(localStorage.getItem("Products"));
