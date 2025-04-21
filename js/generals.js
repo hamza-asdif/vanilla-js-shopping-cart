@@ -7,7 +7,7 @@ let sidebarCartSumDom = document.querySelector("#cart-sum-span");
 let HeaderCartSumDom = document.querySelector(".cart-span");
 let HeaderCartCounter = document.querySelector(".cart-counter");
 let sidebarCartCounter = document.querySelector(".sidebar-header-span");
-let ProductPageDom = document.querySelector(".product-ui");
+
 let CartPageDom = document.querySelector(".cart-table");
 let SearchIcon = document.querySelector("#search-a");
 let SearchBar = document.querySelector(".search-box");
