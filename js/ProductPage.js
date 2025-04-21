@@ -8,31 +8,46 @@ const ProductPageUI = function (id) {
     if (element.id == ProductId_Storage) {
       let Prod = `<div class="product-image-container">
                     <div class="product-img-box">
-                        <img src="${element.Image}" alt="">
+                        <img src="${element.Image}" alt="${element.name}">
                     </div>
 
                     <div class="product-image-alternative">
-                        <img src="${element.Image}" alt="" class="image-alternative">
-                        <img src="${element.Image}" alt="" class="image-alternative">
-                        <img src="${element.Image}" alt="" class="image-alternative">
-                        <img src="${element.Image}" alt="" class="image-alternative">
+                        <img src="${element.Image}" alt="${element.name}" class="image-alternative">
+                        <img src="${element.Image}" alt="${element.name}" class="image-alternative">
+                        <img src="${element.Image}" alt="${element.name}" class="image-alternative">
+                        <img src="${element.Image}" alt="${element.name}" class="image-alternative">
                     </div>
                 </div>
 
                 <div class="product-ui-infos">
                     <h2 class="product-ui-title">${element.name}</h2>
                     <div class="product-ui-prices">
-                        <span class="product-ui-price"> ${element.price} ريال سعودي  </span>
-                        <span class="price-off"> ${element.price} ريال سعودي  </span>
+                        <span class="product-ui-price">${element.price} ريال سعودي</span>
+                        <span class="price-off">${Math.round(element.price * 1.2)} ريال سعودي</span>
+                    </div>
+                    
+                    <div class="product-features">
+                        <div class="feature-item">
+                            <i class="fas fa-truck"></i>
+                            <span>توصيل مجاني لجميع أنحاء المملكة</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>ضمان الجودة</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-undo"></i>
+                            <span>استرجاع مجاني خلال 14 يوم</span>
+                        </div>
                     </div>
 
                     <span class="product-checkout-title">للطلب يرجى إدخال معلوماتك في الخانات أسفله</span>
                     <form action="">
                         <div class="checkout-inputs">
-                           <input type="text" class="full-name" placeholder="الاسم بالكامل">
-                           <input type="text" class="phone" placeholder="رقم الهاتف">
-                           <input type="text" class="city" placeholder="المدينة">
-                           <input type="text" class="adress" placeholder="العنوان">
+                           <input type="text" class="full-name" placeholder="الاسم بالكامل" required>
+                           <input type="text" class="phone" placeholder="رقم الهاتف" required>
+                           <input type="text" class="city" placeholder="المدينة" required>
+                           <input type="text" class="adress" placeholder="العنوان" required>
                         </div>
                     </form>
 
@@ -50,6 +65,22 @@ const ProductPageUI = function (id) {
                 </div>`;
 
       ProductPageDom.innerHTML = Prod;
+      
+      // Add event listeners for thumbnail images
+      document.querySelectorAll('.image-alternative').forEach(img => {
+        img.addEventListener('click', function() {
+          document.querySelector('.product-img-box img').src = this.src;
+        });
+      });
+      
+      // Update fake visitor counter randomly
+      setInterval(() => {
+        const visitorCounter = document.querySelector('.visitors-counter');
+        if (visitorCounter) {
+          const randomVisitors = Math.floor(Math.random() * 30) + 30;
+          visitorCounter.textContent = randomVisitors;
+        }
+      }, 8000);
     }
   });
 };
@@ -69,31 +100,46 @@ const SecondProductPageUI = function (id) {
     if (element.id == secondProductId_Storage) {
       let Prod = `<div class="product-image-container">
                     <div class="product-img-box">
-                        <img src="${element.Image}" alt="">
+                        <img src="${element.Image}" alt="${element.name}">
                     </div>
 
                     <div class="product-image-alternative">
-                        <img src="${element.Image}" alt="" class="image-alternative">
-                        <img src="${element.Image}" alt="" class="image-alternative">
-                        <img src="${element.Image}" alt="" class="image-alternative">
-                        <img src="${element.Image}" alt="" class="image-alternative">
+                        <img src="${element.Image}" alt="${element.name}" class="image-alternative">
+                        <img src="${element.Image}" alt="${element.name}" class="image-alternative">
+                        <img src="${element.Image}" alt="${element.name}" class="image-alternative">
+                        <img src="${element.Image}" alt="${element.name}" class="image-alternative">
                     </div>
                 </div>
 
                 <div class="product-ui-infos">
                     <h2 class="product-ui-title">${element.name}</h2>
                     <div class="product-ui-prices">
-                        <span class="product-ui-price"> ${element.price} ريال سعودي  </span>
-                        <span class="price-off"> ${element.price} ريال سعودي  </span>
+                        <span class="product-ui-price">${element.price} ريال سعودي</span>
+                        <span class="price-off">${Math.round(element.price * 1.2)} ريال سعودي</span>
+                    </div>
+                    
+                    <div class="product-features">
+                        <div class="feature-item">
+                            <i class="fas fa-truck"></i>
+                            <span>توصيل مجاني لجميع أنحاء المملكة</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>ضمان الجودة</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-undo"></i>
+                            <span>استرجاع مجاني خلال 14 يوم</span>
+                        </div>
                     </div>
 
                     <span class="product-checkout-title">للطلب يرجى إدخال معلوماتك في الخانات أسفله</span>
                     <form action="">
                         <div class="checkout-inputs">
-                           <input type="text" class="full-name" placeholder="الاسم بالكامل">
-                           <input type="text" class="phone" placeholder="رقم الهاتف">
-                           <input type="text" class="city" placeholder="المدينة">
-                           <input type="text" class="adress" placeholder="العنوان">
+                           <input type="text" class="full-name" placeholder="الاسم بالكامل" required>
+                           <input type="text" class="phone" placeholder="رقم الهاتف" required>
+                           <input type="text" class="city" placeholder="المدينة" required>
+                           <input type="text" class="adress" placeholder="العنوان" required>
                         </div>
                     </form>
 
@@ -111,6 +157,22 @@ const SecondProductPageUI = function (id) {
                 </div>`;
 
       ProductPageDom.innerHTML = Prod;
+      
+      // Add event listeners for thumbnail images
+      document.querySelectorAll('.image-alternative').forEach(img => {
+        img.addEventListener('click', function() {
+          document.querySelector('.product-img-box img').src = this.src;
+        });
+      });
+      
+      // Update fake visitor counter randomly
+      setInterval(() => {
+        const visitorCounter = document.querySelector('.visitors-counter');
+        if (visitorCounter) {
+          const randomVisitors = Math.floor(Math.random() * 30) + 30;
+          visitorCounter.textContent = randomVisitors;
+        }
+      }, 8000);
     }
   });
 };

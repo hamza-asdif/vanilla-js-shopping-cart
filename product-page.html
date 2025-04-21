@@ -46,18 +46,9 @@
                         <span></span>
                         <span></span>
                     </div>
-                    <div class="menu-box">
-                        <ul class="menu-ul">
-                            <li class="menu-li search-icon" id="search-a"><a href="#" class="menu-a"><i
-                                        class="fa-solid fa-magnifying-glass"></i></a></li>
-                            <li class="menu-li"><a href="index.html" class="menu-a">الصفحة الرئيسية</a></li>
-                            <li class="menu-li"><a href="favorites.html" class="menu-a">المفضلة</a></li>
-                            <li class="menu-li"><a href="cart.html" class="menu-a">سلة المشتريات</a></li>
-                        </ul>
-                    </div>
 
-                    <div class="logo-box">
-                        <a href="#" class="logo-link">
+                    <div class="logo-box" style="display: flex; justify-content: center; align-items: center;">
+                        <a href="index.html" class="logo-link">
                             <img src="images/logo.png" alt="" class="logo">
                         </a>
                     </div>
@@ -71,45 +62,62 @@
                                     <span class="cart-span">0 ريال سعودي</span>
                                 </a>
                             </div>
-
-                            <div class="cart-sidebar">
-                                <div class="cart-sidebar-header">
-                                    <div class="sidebar-header-content">
-                                        <h3 class="sidebar-header-title">سلة مشترياتي</h3>
-                                        <span class="sidebar-header-span">0 عناصر</span>
-                                    </div>
-
-                                    <i class="fa-regular fa-circle-xmark" id="close-sidebar"></i>
-                                </div>
-
-                                <div class="cart-sidebar-products">
-                                    <ul class="ul-product-dom">
-                                    </ul>
-                                </div>
-
-                                <div class="sidebar-call-to-action">
-                                    <div class="sidebar-first-tab">
-                                        <span class="first-tab-title">مجموع سلة التسوق</span>
-                                        <span class="first-tab-span" id="cart-sum-span">0 ريال سعودي</span>
-                                    </div>
-
-                                    <div class="sidebar-middle-tab">
-                                        <a href="cart.html" id="cart-buy-now"> <button class="middle-tab-btn">شراء
-                                                الآن</button> </a>
-                                    </div>
-
-                                    <div class="sidebar-last-tab">
-                                        <button class="last-tab-btn">استمر في التسوق</button>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
+                    </div>
+
+                    <div class="menu-box">
+                        <ul class="menu-ul">
+                            <li class="menu-li search-icon" id="search-a">
+                                <a href="#" class="menu-a">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                </a>
+                            </li>
+                            <li class="menu-li">
+                                <a href="index.html" class="menu-a">الصفحة الرئيسية</a>
+                            </li>
+                            <li class="menu-li">
+                                <a href="favorites.html" class="menu-a">المفضلة</a>
+                            </li>
+                            <li class="menu-li">
+                                <a href="cart.html" class="menu-a">سلة المشتريات</a>
+                            </li>
+                        </ul>
                     </div>
                 </div>
             </div>
         </div>
+
+        <div class="cart-sidebar">
+            <div class="cart-sidebar-header">
+                <div class="sidebar-header-content">
+                    <h3 class="sidebar-header-title">سلة مشترياتي</h3>
+                    <span class="sidebar-header-span">0 عناصر</span>
+                </div>
+                <i class="fa-regular fa-circle-xmark" id="close-sidebar"></i>
+            </div>
+
+            <div class="cart-sidebar-products">
+                <ul class="ul-product-dom">
+                </ul>
+            </div>
+
+            <div class="sidebar-call-to-action">
+                <div class="sidebar-first-tab">
+                    <span class="first-tab-title">مجموع سلة التسوق</span>
+                    <span class="first-tab-span" id="cart-sum-span">0 ريال سعودي</span>
+                </div>
+
+                <div class="sidebar-middle-tab">
+                    <a href="cart.html" id="cart-buy-now">
+                        <button class="middle-tab-btn">شراء الآن</button>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mobile-overlay"></div>
     </header>
-    <!-- /.header end -->
+    <!-- /.header -->
 
     <!-- search bar -->
     <div class="search-box">
